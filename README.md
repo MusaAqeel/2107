@@ -24,5 +24,11 @@ This project enhances Spotify's auto-generated playlists by allowing users to cr
    pnpm run dev
    ```
 
-For contributors: Create branches named `[first initial][lastname]/dev/[feature]`
-Example: `maqeel/dev/add-login-page`
+For contributors: 
+- Create branches named `[first initial][lastname]/dev/[feature]`
+   - Example: `maqeel/dev/add-login-page`
+- Pull Requests must be assigned to a descriptive issue
+- Merge Process:
+   - 1 approval to merge into development branch
+   - 2 approvals to merge a development branch into main
+- Update progress on [project board](https://github.com/users/MusaAqeel/projects/6/views/7)
