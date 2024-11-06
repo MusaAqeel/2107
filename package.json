@@ -3,7 +3,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "python:setup": "conda env create -f environment.yml || conda env update -f environment.yml --prune",
+    "python:update": "conda env update -f environment.yml --prune",
+    "python:dev": "cd app/api/ai-chat/python && uvicorn main:app --reload --port 8000 --log-level debug",
+    "python:test": "conda run -n mixify pytest app/api/tests -v",
+    "python:test:cov": "conda run -n mixify pytest app/api/tests -v --cov=app/api/ai-chat/python --cov-report=html",
+    "dev:all": "concurrently \"npm run dev\" \"npm run python:dev\""
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.1",
