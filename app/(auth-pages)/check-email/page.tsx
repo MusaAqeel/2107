@@ -7,17 +7,15 @@ import { SubmitButton } from "@/components/submit-button";
 import { FormMessage, Message } from "@/components/form-message";
 import { redirect } from "next/navigation";
 
-interface CheckEmailProps {
+interface PageProps {
   searchParams: {
     email?: string;
-    success?: string;
-    error?: string;
-    message?: string;
-  }
+  } & Promise<Message>;
 }
 
-export default async function CheckEmail({ searchParams }: CheckEmailProps) {
-  const email = searchParams.email;
+export default async function CheckEmail({ searchParams }: PageProps) {
+  const message = await searchParams;
+  const email = 'email' in searchParams ? searchParams.email : undefined;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -27,15 +25,6 @@ export default async function CheckEmail({ searchParams }: CheckEmailProps) {
   if (!email && !user?.email) {
     redirect('/sign-up');
   }
-
-  // Convert searchParams to Message type for FormMessage component
-  const message: Message = searchParams.success
-    ? { success: searchParams.success }
-    : searchParams.error
-    ? { error: searchParams.error }
-    : searchParams.message
-    ? { message: searchParams.message }
-    : { message: "" }; // Default empty message if no params exist
 
   return (
     <div className="flex flex-col min-w-64 max-w-64 mx-auto gap-6">
