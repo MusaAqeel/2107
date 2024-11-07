@@ -26,13 +26,9 @@ export const signUpAction = async (formData: FormData) => {
   if (error) {
     console.error(error.code + " " + error.message);
     return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
   }
+
+  return redirect("/check-email");
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -127,4 +123,79 @@ export const signOutAction = async () => {
   const supabase = await createClient();
   await supabase.auth.signOut();
   return redirect("/sign-in");
+};
+
+export const completeProfileAction = async (formData: FormData) => {
+  const firstName = formData.get("firstName")?.toString();
+  const lastName = formData.get("lastName")?.toString();
+  const supabase = await createClient();
+
+  if (!firstName || !lastName) {
+    return encodedRedirect(
+      "error",
+      "/complete-profile",
+      "First and last name are required"
+    );
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    return encodedRedirect("error", "/sign-in", "Please sign in first");
+  }
+
+  // Update user metadata with their name
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      firstName,
+      lastName,
+      full_name: `${firstName} ${lastName}`,
+    },
+  });
+
+  if (error) {
+    return encodedRedirect(
+      "error",
+      "/complete-profile",
+      "Failed to update profile"
+    );
+  }
+
+  return redirect("/protected");
+};
+
+export const resendVerificationEmail = async () => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const origin = (await headers()).get("origin");
+
+  if (!user?.email) {
+    return encodedRedirect(
+      "error", 
+      "/check-email", 
+      "No email found. Please sign up again."
+    );
+  }
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: user.email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return encodedRedirect(
+      "error",
+      "/check-email",
+      error.message
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    "/check-email",
+    "Verification email sent! Please check your inbox."
+  );
 };
