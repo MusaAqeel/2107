@@ -28,7 +28,7 @@ export const signUpAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-up", error.message);
   }
 
-  return redirect("/check-email");
+  return redirect(`/check-email?email=${encodeURIComponent(email)}`);
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -164,12 +164,12 @@ export const completeProfileAction = async (formData: FormData) => {
   return redirect("/protected");
 };
 
-export const resendVerificationEmail = async () => {
+export const resendVerificationEmail = async (formData: FormData) => {
+  const email = formData.get("email")?.toString();
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   const origin = (await headers()).get("origin");
 
-  if (!user?.email) {
+  if (!email) {
     return encodedRedirect(
       "error", 
       "/check-email", 
@@ -179,7 +179,7 @@ export const resendVerificationEmail = async () => {
 
   const { error } = await supabase.auth.resend({
     type: 'signup',
-    email: user.email,
+    email: email,
     options: {
       emailRedirectTo: `${origin}/auth/callback`,
     },
@@ -195,7 +195,7 @@ export const resendVerificationEmail = async () => {
 
   return encodedRedirect(
     "success",
-    "/check-email",
+    `/check-email?email=${encodeURIComponent(email)}`,
     "Verification email sent! Please check your inbox."
   );
 };
