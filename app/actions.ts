@@ -42,6 +42,9 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
+    if (error.message.includes('Email not confirmed')) {
+      return redirect(`/check-email?email=${encodeURIComponent(email)}&error=Please verify your email before signing in.`);
+    }
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
