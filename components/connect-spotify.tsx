@@ -3,7 +3,7 @@
 export default function ConnectSpotify() {
   const handleConnect = () => {
     // Redirect to your Spotify auth endpoint
-    window.location.href = '/api/auth/spotify';
+    window.location.href = '/api/spotify/auth';
   };
 
   return (
