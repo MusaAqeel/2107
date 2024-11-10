@@ -36,6 +36,12 @@ export default function RootLayout({
                   <div className="flex gap-5 items-center font-semibold">
                     <Link href="/">Mixify - Your AI DJ</Link>
                     <div className="flex items-center gap-2">
+                      <Link 
+                        href="/profile" 
+                        className="text-sm text-foreground/60 hover:text-foreground"
+                      >
+                        Profile
+                      </Link>
                     </div>
                   </div>
                   <HeaderAuth />
