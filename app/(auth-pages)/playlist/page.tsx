@@ -1,6 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from 'next/headers';
+import { ReloadButton } from '@/components/ReloadButton';
+import { AnimatedPlaylistGrid } from '@/components/AnimatedPlaylistGrid';
 
 interface Playlist {
   id: string;
@@ -68,9 +70,12 @@ export default async function PlaylistPage() {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="bg-gray-50 dark:bg-gray-900 shadow sm:rounded-lg mb-8">
           <div className="px-4 py-5 sm:p-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Your Playlists
-            </h1>
+            <div className="flex items-center justify-between">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+                Your Playlists
+              </h1>
+              <ReloadButton />
+            </div>
           </div>
         </div>
 
@@ -96,29 +101,11 @@ export default async function PlaylistPage() {
           </div>
         )}
 
-        {/* Updated Playlists Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {playlists.map((playlist) => (
-            <div
-              key={playlist.id}
-              className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden hover:shadow-lg transition-shadow duration-300"
-            >
-              <img
-                src={playlist.images?.[0]?.url || '/playlist-placeholder.png'}
-                alt={playlist.name}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 truncate">
-                  {playlist.name}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {playlist.tracks.total} tracks
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* Replace the existing grid with the animated one */}
+        <AnimatedPlaylistGrid 
+          playlists={playlists} 
+          key={Date.now()} 
+        />
 
         {/* Empty State */}
         {playlists.length === 0 && !error && (
