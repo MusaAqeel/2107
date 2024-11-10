@@ -4,7 +4,7 @@ export default function Hero() {
   return (
     <div className="flex flex-col gap-16 items-center">
       <div className="flex gap-8 justify-center items-center">
-        <Link href="https://github.com/MusaAqeel/2107-stealth" className="font-semibold">
+        <Link href="/" className="font-semibold">
           Mixify - Your AI DJ
         </Link>
       </div>
