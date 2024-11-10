@@ -9,9 +9,8 @@ export function ReloadButton() {
 
   const handleReload = () => {
     setIsLoading(true);
-    router.refresh();
-    // Reset loading state after a short delay
-    setTimeout(() => setIsLoading(false), 1000);
+    // Force a complete refresh of the page
+    window.location.reload();
   };
 
   return (

@@ -102,7 +102,10 @@ export default async function PlaylistPage() {
         )}
 
         {/* Replace the existing grid with the animated one */}
-        <AnimatedPlaylistGrid playlists={playlists} />
+        <AnimatedPlaylistGrid 
+          playlists={playlists} 
+          key={Date.now()} 
+        />
 
         {/* Empty State */}
         {playlists.length === 0 && !error && (
