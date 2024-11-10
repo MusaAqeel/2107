@@ -29,11 +29,10 @@ export default async function Profile() {
 
   const isSpotifyConnected = !!spotifyConnection?.access_token;
   
-  // Get URL params for error/success messages
-  const headersList = headers();
-  const url = new URL(headersList.get('x-url') || '', process.env.NEXT_PUBLIC_APP_URL);
-  const error = url.searchParams.get('error');
-  const success = url.searchParams.get('success');
+  // Get URL params for error/success messages using searchParams
+  const searchParams = new URLSearchParams((await headers()).get('next-url')?.split('?')[1] || '');
+  const error = searchParams.get('error');
+  const success = searchParams.get('success');
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-8">
