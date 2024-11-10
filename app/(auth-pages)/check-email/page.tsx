@@ -4,18 +4,22 @@ import { Information } from "@/components/ui/information";
 import { createClient } from "@/utils/supabase/server";
 import { resendVerificationEmail } from "@/app/actions";
 import { SubmitButton } from "@/components/submit-button";
-import { FormMessage, Message } from "@/components/form-message";
 import { redirect } from "next/navigation";
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     email?: string;
-  } & Promise<Message>;
+    error?: string;
+    success?: string;
+  }>;
 }
 
 export default async function CheckEmail({ searchParams }: PageProps) {
-  const message = await searchParams;
-  const email = 'email' in searchParams ? searchParams.email : undefined;
+  const params = await searchParams;
+  const email = params?.email;
+  const error = params?.error;
+  const success = params?.success;
+  
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -46,7 +50,12 @@ export default async function CheckEmail({ searchParams }: PageProps) {
             >
               Resend verification email
             </SubmitButton>
-            <FormMessage message={message} />
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
+            {success && (
+              <p className="text-sm text-green-500">{success}</p>
+            )}
             <p className="text-sm text-muted-foreground text-center">
               Already verified? {" "}
               <Link href="/sign-in" className="text-primary underline">
@@ -54,11 +63,7 @@ export default async function CheckEmail({ searchParams }: PageProps) {
               </Link>
             </p>
           </form>
-        ) : (
-          <Button asChild variant="default">
-            <Link href="/sign-in">Continue to sign in</Link>
-          </Button>
-        )}
+        ) : null}
       </div>
     </div>
   );
