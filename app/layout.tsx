@@ -42,6 +42,18 @@ export default function RootLayout({
                       >
                         Profile
                       </Link>
+                      <Link 
+                        href="/playlist" 
+                        className="text-sm text-foreground/60 hover:text-foreground"
+                      >
+                        Playlists
+                      </Link>
+                      <Link 
+                        href="/" 
+                        className="text-sm text-foreground/60 hover:text-foreground"
+                      >
+                        Home
+                      </Link>
                     </div>
                   </div>
                   <HeaderAuth />
