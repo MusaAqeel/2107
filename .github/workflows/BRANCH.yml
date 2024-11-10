@@ -2,6 +2,7 @@ name: PR Branch Name Check
 
 on:
   pull_request:
+    branches: [main, staging, prod]
     types: [opened, synchronize, reopened]
 
 jobs:
