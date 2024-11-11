@@ -85,7 +85,6 @@ export default async function PlaylistPage() {
               <ReloadButton />
             </div>
             
-            {/* Add the search component here */}
             <div className="mt-6">
               <SpotifySearchWrapper 
                 accessToken={spotifyConnection.access_token}
