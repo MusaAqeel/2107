@@ -7,15 +7,50 @@ interface ChatResponse {
   content: string;
 }
 
+// Add new interface for formatted songs
+interface Song {
+  title: string;
+  artist: string;
+}
+
+// Add formatting helper function
+function formatSongResponse(content: string): Song[] {
+  // Split by newline or number with dot (handles both formats)
+  const songs = content
+    .split(/\n|(?=\d\.)/g)
+    .filter(line => line.trim())
+    .map(line => {
+      // Remove number prefix and trim
+      const songText = line.replace(/^\d+\.\s*/, '').trim();
+      // Split by "by" and handle potential errors
+      const [title, artist] = songText.split(' by ').map(s => s.trim());
+      return { title, artist };
+    });
+
+  return songs;
+}
+
 // OpenAI setup
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Constants
-const SYSTEM_MESSAGE = `
-You are a helpful AI assistant. Your task is to provide informative and engaging responses to user queries about music.
-Be concise, accurate, and helpful in your responses.
+const SYSTEM_MESSAGE = `You are a music curator with extensive knowledge across all genres and eras. Your task is to analyze user prompts and generate song recommendations that perfectly match their mood and preferences.
+
+Always return exactly 5 song recommendations in this format:
+1. [Song Title] by [Artist Name]
+2. [Song Title] by [Artist Name]
+3. [Song Title] by [Artist Name]
+4. [Song Title] by [Artist Name]
+5. [Song Title] by [Artist Name]
+
+Rules:
+- Return only the numbered list without any other text
+- Include full artist names (no abbreviations)
+- Include exact song titles
+- Do not include additional commentary or explanations
+- Must return exactly 5 songs, no more and no less
 `;
 
 // Helper functions
@@ -72,9 +107,17 @@ export async function POST(req: NextRequest) {
     (async () => {
       try {
         const response = await getGPTResponse(prompt);
+        const formattedSongs = formatSongResponse(response.content);
+        
+        const formattedResponse = {
+          content: formattedSongs.map((song, index) => (
+            `${index + 1}. ${song.title} by ${song.artist}`
+          )).join('\n')
+        };
+
         await writer.write(
           new TextEncoder().encode(
-            `data: ${JSON.stringify(response)}\n\n`
+            `data: ${JSON.stringify(formattedResponse)}\n\n`
           )
         );
       } catch (error) {
