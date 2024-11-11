@@ -120,6 +120,7 @@ export default async function Profile() {
                     src={spotifyConnection.profile_data?.images?.[0]?.url || '/spotify-icon.png'} 
                     alt="Spotify Profile" 
                     className="w-12 h-12 rounded-full"
+                    data-testid="spotify-profile-image"
                   />
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -130,7 +131,7 @@ export default async function Profile() {
                     </p>
                   </div>
                 </div>
-                <DisconnectSpotify />
+                <DisconnectSpotify data-testid='disconnect'/>
               </div>
             ) : (
               <div className="mt-4">
@@ -138,7 +139,7 @@ export default async function Profile() {
                   Connect your Spotify account to start creating AI-powered playlists
                 </p>
                 <div className="mt-4">
-                  <ConnectSpotify />
+                  <ConnectSpotify data-testid='connect'/>
                 </div>
               </div>
             )}

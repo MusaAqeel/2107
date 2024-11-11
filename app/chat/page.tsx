@@ -26,7 +26,7 @@ const Chat = () => {
 
     const handleSubmit = (event: React.FormEvent) => {
         
-        event.preventDefault(); // prevent the default form submission
+        event.preventDefault();
 
         
         setShowInputAlert(false);
@@ -39,8 +39,6 @@ const Chat = () => {
         const submittedInput = inputValue; // store for LLM use
         const submittedPlaylistLength = playlistLength;
 
-        console.log("Submitted Input:", submittedInput);
-        console.log("Submitted Playlist Length:", submittedPlaylistLength);
         setGenerating(true);
 
         LLM(submittedInput, submittedPlaylistLength);
@@ -52,9 +50,6 @@ const Chat = () => {
 
     return (
         <> 
-            {/* <video autoPlay loop muted id="video">
-                <source src={video} type='video/mp4'/>
-            </video> */}
             { !show ? (
             <div className={styles.container}>
             <Image src="/waves.png" width="100" height="100" alt="image of some sound waves"></Image>

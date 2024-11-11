@@ -11,8 +11,8 @@ const feedback = () => {
             <div className={styles.container}>
             <div className={styles.title}><h1>Feedback</h1></div>
                 <form className={styles.form} >
-                    <Input/>
-                    <Button variant="outline" size="lg" type="submit">
+                    <Input data-testid="textInput"/>
+                    <Button variant="outline" size="lg" type="submit" data-testid="submitButton">
                         Submit
                     </Button>
                 </form>

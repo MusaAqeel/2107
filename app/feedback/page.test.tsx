@@ -6,7 +6,6 @@ import React from 'react';
 
 let input: HTMLInputElement;
 let button: HTMLElement;
-let slider: HTMLElement;
 
 
 describe('feedback', () => {

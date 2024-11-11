@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
@@ -6,6 +6,7 @@ import LLM from '../LLM/LLM';
 import React from 'react';
 
 jest.mock("../LLM/LLM");
+global.fetch = jest.fn() as jest.Mock;
 
 let input: HTMLInputElement;
 let button: HTMLElement;
@@ -166,3 +167,25 @@ describe('homepage', () => {
         expect(LLM).toBeCalledWith("test", 10);    
     });
 });
+
+// describe('homepage', () => {
+    
+    // afterEach(() => {
+    //     jest.clearAllMocks();
+    // });
+
+    // it('understands basic prompts (TC-016)', async () => {
+    //     (fetch as jest.Mock).mockResolvedValue({content: 'Test pass'});
+
+    //     render(<Chat />);
+    //     const input = screen.getByTestId('textInput');
+    //     const slider = screen.getByTestId('sliderInput');
+    //     const button = screen.getByTestId('submitButton');
+
+    //     fireEvent.change(input, {target: {value: "test"}});
+    //     fireEvent.change(slider, {target: {value: 10}});
+    //     fireEvent.click(button);
+
+    //     await waitFor(() => { expect(fetch).toHaveBeenCalled()});
+    // });
+// });
