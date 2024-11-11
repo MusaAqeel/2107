@@ -3,6 +3,7 @@ import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
 import LLM from '../LLM/LLM';
+import React from 'react';
 
 jest.mock("../LLM/LLM");
 
@@ -38,21 +39,21 @@ describe('homepage', () => {
         expect(LLM).toBeCalledWith("AAAAAAAAAAAAAAAAAAAAAAAAA", 10);
     });
 
-    it('submit button sends request to LLM (TC-002)', () => {
+    it('submits the request to LLM when submit clicked (TC-002)', () => {
         fireEvent.change(input, {target: {value: "Test"}});
         fireEvent.click(button);
 
         expect(LLM).toBeCalledWith("Test", 5);
     });
     
-    it('button renders Generation in process text while awaiting content generation (TC-003)', () => {
+    it('renders Generation in process text while awaiting content generation (TC-003)', () => {
         fireEvent.change(input, {target: {value: "test"}});
         fireEvent.click(button);
 
         expect(button.textContent).toBe("Generation in process");
     });
     
-    it('playlist is renders original prompt and list of songs when response received from LLM (TC-004)', () => {
+    it('renders original prompt and list of songs when response received from LLM (TC-004)', () => {
         const alert = screen.queryByTestId('alert');
         expect(alert).toBeNull();
 
@@ -64,7 +65,7 @@ describe('homepage', () => {
         }, 6000);
     });
 
-    it('link renders once received input from LLM (TC-005)', () => {
+    it('renders link to playlist once received input from LLM (TC-005)', () => {
         const link = screen.queryByTestId('alert');
         expect(link).toBeNull();
 
@@ -76,7 +77,7 @@ describe('homepage', () => {
         }, 6000);
     });
 
-    it('save button is rendered after successful generation for user to add to spotify account (TC-006)', () => {
+    it('renders save button after successful generation (TC-006)', () => {
         const saveButton = screen.queryByTestId('saveButton') as HTMLElement;
         expect(saveButton).toBeNull();
         fireEvent.change(input, {target: {value: "test"}});
@@ -87,7 +88,7 @@ describe('homepage', () => {
         }, 6000);
     });
 
-    it('playlist created alert (TC-007)', () => {
+    it('displays playlist created alert (TC-007)', () => {
         const alert = screen.queryByTestId('alert');
         expect(alert).toBeNull();
         fireEvent.change(input, 'Test');
@@ -100,7 +101,7 @@ describe('homepage', () => {
 
     });
     
-    it('generic error banner renders (TC-008)', () => {
+    it('renders generic error banner (TC-008)', () => {
         jest.mock("../LLM/LLM", () => {
             throw new Error();
         });
@@ -115,7 +116,7 @@ describe('homepage', () => {
         }, 6000);
     });
     
-    it('response not received error banner renders (TC-009)', () => {
+    it('renders response not received error banner (TC-009)', () => {
         jest.mock("../LLM/LLM", () => {
             throw new Error("500");
         });
@@ -146,7 +147,7 @@ describe('homepage', () => {
         expect(image).toBeInTheDocument();
     });
 
-    it('invalid input alert renders (TC-012)', () => {
+    it('renders invalid input alert (TC-012)', () => {
         const alert = screen.queryByTestId('invalidInputAlert');
         expect(alert).toBeNull();
         fireEvent.change(input, {target: {value: ""}});

@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Feedback from './page';
+import React from 'react';
 
 let input: HTMLInputElement;
 let button: HTMLElement;
@@ -22,7 +23,7 @@ describe('feedback', () => {
         expect(button).toBeInTheDocument();
     });
 
-    it('feedback submits (TC-015)', () => {
+    it('submits the feedback(TC-015)', () => {
         fireEvent.change(input, {target: {value: "test"}});
         fireEvent.click(button);
 
