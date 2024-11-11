@@ -4,6 +4,7 @@ import { headers } from 'next/headers';
 import { ReloadButton } from '@/components/ReloadButton';
 import { AnimatedPlaylistGrid } from '@/components/AnimatedPlaylistGrid';
 import { refreshSpotifyToken } from '@/utils/spotify';
+import { SpotifySearchWrapper } from '@/components/spotify-search-wrapper';
 
 interface Playlist {
   id: string;
@@ -82,6 +83,13 @@ export default async function PlaylistPage() {
                 Your Playlists
               </h1>
               <ReloadButton />
+            </div>
+            
+            {/* Add the search component here */}
+            <div className="mt-6">
+              <SpotifySearchWrapper 
+                accessToken={spotifyConnection.access_token}
+              />
             </div>
           </div>
         </div>
