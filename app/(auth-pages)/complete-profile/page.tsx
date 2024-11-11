@@ -32,6 +32,7 @@ export default async function CompleteProfile(props: {
           name="firstName" 
           placeholder="John"
           required 
+          data-testid="firstNameInput"
         />
         
         <Label htmlFor="lastName">Last Name</Label>
@@ -39,11 +40,13 @@ export default async function CompleteProfile(props: {
           name="lastName" 
           placeholder="Doe"
           required 
+          data-testid="lastNameInput"
         />
 
         <SubmitButton 
           formAction={completeProfileAction} 
           pendingText="Saving..."
+          data-testid="submit"
         >
           Complete Profile
         </SubmitButton>
