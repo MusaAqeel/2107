@@ -35,8 +35,10 @@ export default async function CheckEmail({ searchParams }: PageProps) {
       <h1 className="text-2xl font-medium">Check your email</h1>
       
       <Information
+        data-testid="info"
         title="Confirmation Required"
-        message={`We've sent you an email with a confirmation link to ${email || user?.email}. Please check your inbox and click the link to verify your account.`}
+        message={`We've sent you an email with a confirmation link to ${email || user?.email}. Please check your inbox and click the link to verify your account.`
+        }
       />
 
       <div className="flex flex-col gap-4">
@@ -47,6 +49,7 @@ export default async function CheckEmail({ searchParams }: PageProps) {
               formAction={resendVerificationEmail} 
               variant="outline"
               pendingText="Sending..."
+              data-testid="submit"
             >
               Resend verification email
             </SubmitButton>
@@ -58,7 +61,7 @@ export default async function CheckEmail({ searchParams }: PageProps) {
             )}
             <p className="text-sm text-muted-foreground text-center">
               Already verified? {" "}
-              <Link href="/sign-in" className="text-primary underline">
+              <Link href="/sign-in" className="text-primary underline" data-testid="link">
                 Sign in
               </Link>
             </p>
