@@ -1,0 +1,19 @@
+name: mixify
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - fastapi  
+  - uvicorn
+  - python-dotenv  
+  - pytest=8.3.3  
+  - requests  
+  - pip:
+    - openai==1.51.2  
+    - python-multipart  
+    - requests-mock  
+    - pytest-mock  
+    - pytest-asyncio  
+    - httpx 

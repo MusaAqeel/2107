@@ -1,0 +1,5 @@
+openai=1.51.2
+fastapi
+uvicorn
+python-dotenv
+pytest=8.3.3
