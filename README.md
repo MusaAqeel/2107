@@ -2,6 +2,8 @@
 
 Mixify enhances Spotify's auto-generated playlists by enabling users to create custom playlists based on specific prompts like mood, genre, or artist. Leveraging a large language model (LLM) and Spotify's API, Mixify instantly generates tailored playlists accessible through an intuitive web interface.
 
+https://drive.google.com/file/d/1WUcJNKNHFH9Mnk5QOQb4rSr7dh01ExCd/view?usp=sharing
+
 # Quick Start Guide
 
 1. Install `pnpm` globally:
