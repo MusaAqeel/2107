@@ -30,7 +30,7 @@ describe('forgot password flow', () => {
         expect(email).toBeInTheDocument();
     });
 
-    it('renders sign in button (TC-039)', () => {
+    it('renders submit button (TC-039)', () => {
         expect(button).toBeInTheDocument();
     });
 
