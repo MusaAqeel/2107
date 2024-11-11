@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { headers } from 'next/headers';
 import { ReloadButton } from '@/components/ReloadButton';
 import { AnimatedPlaylistGrid } from '@/components/AnimatedPlaylistGrid';
+import { refreshSpotifyToken } from '@/utils/spotify';
 
 interface Playlist {
   id: string;
@@ -13,12 +14,18 @@ interface Playlist {
   };
 }
 
-async function getSpotifyPlaylists(accessToken: string): Promise<Playlist[]> {
+async function getSpotifyPlaylists(accessToken: string, userId: string): Promise<Playlist[]> {
   const response = await fetch('https://api.spotify.com/v1/me/playlists', {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+
+  if (response.status === 401) {
+    // Token expired, refresh it
+    const newToken = await refreshSpotifyToken(userId);
+    return getSpotifyPlaylists(newToken, userId);
+  }
 
   if (!response.ok) {
     throw new Error('Failed to fetch playlists');
@@ -54,7 +61,7 @@ export default async function PlaylistPage() {
   let error = null;
 
   try {
-    playlists = await getSpotifyPlaylists(spotifyConnection.access_token);
+    playlists = await getSpotifyPlaylists(spotifyConnection.access_token, user.id);
   } catch (e) {
     error = 'Failed to load playlists';
     console.error('Error fetching playlists:', e);
