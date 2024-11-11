@@ -20,7 +20,7 @@ describe('forgot password flow', () => {
     });
 
     it('renders title (TC-043)', () => {
-        const title = screen.getByText(/Reset Password/i);
+        const title = screen.getByText(/Complete Profile/i);
         expect(title).toBeInTheDocument();
     });
 
