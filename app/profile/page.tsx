@@ -120,6 +120,7 @@ export default async function Profile() {
                     src={spotifyConnection.profile_data?.images?.[0]?.url || '/spotify-icon.png'} 
                     alt="Spotify Profile" 
                     className="w-12 h-12 rounded-full"
+                    data-testid="spotify-profile-image"
                   />
                   <div>
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
