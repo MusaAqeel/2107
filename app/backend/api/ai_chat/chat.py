@@ -3,19 +3,19 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import json
 import requests
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 load_dotenv()
 
+router = APIRouter()
+
+class ChatRequest(BaseModel):
+   prompt: str
+   auth_token: str
+
 def get_gpt_recommendations(prompt: str) -> dict:
-   """
-   Get song recommendations from GPT based on user prompt
-   Args:
-       prompt: User's prompt for playlist generation
-   Returns:
-       Dictionary containing song recommendations
-   """
    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-   
    completion = client.chat.completions.create(
        model="gpt-4o",
        messages=[
@@ -26,8 +26,7 @@ def get_gpt_recommendations(prompt: str) -> dict:
                {
                "recommendations": [
                    {
-                   "title": "song_title", 
-                   "artist": "artist_name"
+                    {song title} {artist}
                    }
                ]
                }
@@ -39,7 +38,6 @@ def get_gpt_recommendations(prompt: str) -> dict:
                - Do not include additional commentary or explanations
                - Do not include song descriptions or reasons for recommendations
                - Ensure consistent JSON formatting
-               - Must return exactly 15 songs, no more and no less
            """},
            {
                "role": "user", 
@@ -47,29 +45,13 @@ def get_gpt_recommendations(prompt: str) -> dict:
            }
        ]
    )
-
    return clean_gpt_response(completion.choices[0].message.content)
 
 def clean_gpt_response(response_string: str) -> dict:
-   """
-   Clean GPT response by removing backticks and 'json' tag.
-   Args:
-       response_string: Raw response from GPT
-   Returns:
-       Cleaned dictionary of recommendations
-   """
    cleaned = response_string.replace('```json', '').replace('```', '')
    return json.loads(cleaned)
 
 def get_track_ids(recommendations: dict, auth_token: str) -> list:
-   """
-   Search and get Spotify track IDs for recommended songs.
-   Args:
-       recommendations: Dictionary containing recommendations
-       auth_token: Spotify API bearer token
-   Returns:
-       List of Spotify track IDs
-   """
    track_ids = []
    url = "https://api.spotify.com/v1/search"
    headers = {
@@ -98,21 +80,19 @@ def get_track_ids(recommendations: dict, auth_token: str) -> list:
 
    return track_ids
 
-
 def main(prompt: str, auth_token: str) -> list:
-   """
-   Main function to get recommendations and find track IDs
-   Args:
-       prompt: User's prompt for playlist generation
-       auth_token: Spotify API bearer token
-   Returns:
-       List of Spotify track IDs
-   """
    recommendations = get_gpt_recommendations(prompt)
    return get_track_ids(recommendations, auth_token)
 
+@router.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+   try:
+       track_ids = main(request.prompt, request.auth_token)
+       return {"track_ids": track_ids}
+   except Exception as e:
+       raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
-   auth_token = "BQBDxrI1KhrmvkYW07MU9nGQPTRo3Vpty297TyrCA6MRd85ta2E7e_tXyQ5rx1e6vmFyxEsctOQg_nabC5WnOovk8_5-iMC6jVZHvYzBPPUCk9hVdgYfQsINYQuNaMRv37Ya5heq0cjL0JDlU-sWwvG8Brw6bTODOyrKTsurK1P78KeC1pSR19LwPpU_RxdMhLLYpDnRkPpAGDKYJ_eJY6KPx-rFhsVumXUYHRz30_gwcD25BBj570TggmKREQ"
-   prompt = "I want rap songs for my gym workout"
-   track_ids = main(prompt, auth_token)
-   print(track_ids)
+   # For local testing only
+   import uvicorn
+   uvicorn.run("chat:app", host="0.0.0.0", port=8000, reload=True)

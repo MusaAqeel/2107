@@ -29,6 +29,7 @@
     "next": "latest",
     "next-themes": "^0.3.0",
     "openai": "^4.70.2",
+    "pnpm": "^9.12.3",
     "prettier": "^3.3.3",
     "react": "18.2.0",
     "react-dom": "18.2.0",
