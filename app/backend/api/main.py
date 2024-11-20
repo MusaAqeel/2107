@@ -1,24 +1,25 @@
-# main.py
+# backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .spotify import auth, callback, playlist
-from .config import settings  # Use relative import
+from api.spotify import playlist  # Make sure this path is correct
+from api.ai_chat import chat     # Add this if you're using chat endpoints
 
-app = FastAPI(title="Mixify API")
+app = FastAPI()
 
-# CORS middleware configuration
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000"],  # Your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/api/spotify", tags=["spotify"])
-app.include_router(callback.router, prefix="/api/spotify", tags=["spotify"])
+# Include your routers
 app.include_router(playlist.router, prefix="/api/spotify", tags=["spotify"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+# Test endpoint to verify server is running
+@app.get("/")
+async def read_root():
+    return {"status": "API is running"}

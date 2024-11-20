@@ -1,4 +1,0 @@
-[tool.poetry]
-name = "mixify"
-version = "0.1.0"
-packages = [{include = "app"}]

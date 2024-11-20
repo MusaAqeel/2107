@@ -1,8 +1,12 @@
-# playlist.py
 from fastapi import APIRouter, HTTPException, Depends, Query, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from ..config import settings, supabase
-import requests
+import logging
+from typing import List
+import traceback
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 security = HTTPBearer()
@@ -14,7 +18,11 @@ async def search_tracks(
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     try:
+        logger.info(f"Received search request - Query: {query}, Limit: {limit}")
+        
         token = credentials.credentials
+        logger.info("Token received and extracted")
+        
         url = "https://api.spotify.com/v1/search"
         headers = {
             "Authorization": f"Bearer {token}",
@@ -27,9 +35,13 @@ async def search_tracks(
             "limit": limit
         }
         
+        logger.info(f"Making request to Spotify API: {url}")
         response = requests.get(url, headers=headers, params=params)
         
+        # Log the response status and content for debugging
+        logger.info(f"Spotify API Response Status: {response.status_code}")
         if response.status_code != 200:
+            logger.error(f"Spotify API Error Response: {response.text}")
             raise HTTPException(
                 status_code=response.status_code,
                 detail=f"Spotify API error: {response.text}"
@@ -38,88 +50,18 @@ async def search_tracks(
         data = response.json()
         track_ids = []
         
-        if data['tracks']['items']:
+        if data.get('tracks', {}).get('items'):
             track_ids = [track['id'] for track in data['tracks']['items']]
-            return track_ids  # Just return array of IDs
+            logger.info(f"Found {len(track_ids)} tracks")
+            return track_ids
         else:
+            logger.info("No tracks found")
             return []
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.post("/create")
-async def create_playlist(
-   title: str = Query(..., description="The title of your playlist"),
-   description: str | None = Query(None, description="Description of your playlist"),
-   request: list[str] = Body(..., description="List of track IDs to add to playlist"),
-   credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-   try:
-       token = credentials.credentials
-       
-       # Get user profile
-       profile_response = requests.get(
-           "https://api.spotify.com/v1/me",
-           headers={"Authorization": f"Bearer {token}"}
-       )
-       
-       if profile_response.status_code != 200:
-           raise HTTPException(
-               status_code=400, 
-               detail=f"Failed to get user profile: {profile_response.text}"
-           )
-           
-       user_id = profile_response.json()['id']
-       
-       # Create playlist
-       playlist_data = {
-           "name": title,
-           "description": description,
-           "public": True
-       }
-       
-       playlist_response = requests.post(
-           f"https://api.spotify.com/v1/users/{user_id}/playlists",
-           headers={
-               "Authorization": f"Bearer {token}",
-               "Content-Type": "application/json"
-           },
-           json=playlist_data
-       )
-       
-       if playlist_response.status_code != 201:
-           raise HTTPException(
-               status_code=400, 
-               detail=f"Failed to create playlist: {playlist_response.text}"
-           )
-           
-       playlist_id = playlist_response.json()['id']
-       
-       # Add tracks
-       track_uris = [f"spotify:track:{track_id.strip()}" for track_id in request]
-       
-       add_tracks_response = requests.post(
-           f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks",
-           headers={
-               "Authorization": f"Bearer {token}",
-               "Content-Type": "application/json"
-           },
-           json={"uris": track_uris}
-       )
-       
-       if add_tracks_response.status_code not in [200, 201]:
-           raise HTTPException(
-               status_code=400,
-               detail=f"Failed to add tracks: {add_tracks_response.text}"
-           )
-           
-       return {
-           "status": "success",
-           "playlist_id": playlist_id,
-           "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}",
-           "track_count": len(request)
-       }
-       
-   except Exception as e:
-       print(f"Error in create_playlist: {str(e)}")
-       raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error in search_tracks: {str(e)}")
+        logger.error(traceback.format_exc())  # Log the full traceback
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Internal server error: {str(e)}"
+        )

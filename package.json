@@ -13,10 +13,12 @@
     "test": "jest"
   },
   "dependencies": {
+    "@auth/core": "^0.34.2",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-slot": "^1.1.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "autoprefixer": "10.4.17",
@@ -27,6 +29,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.436.0",
     "next": "latest",
+    "next-auth": "^4.24.10",
     "next-themes": "^0.3.0",
     "openai": "^4.70.2",
     "pnpm": "^9.12.3",

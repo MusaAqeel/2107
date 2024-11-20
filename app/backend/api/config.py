@@ -1,6 +1,7 @@
 # config.py
 from pydantic_settings import BaseSettings
 from supabase import create_client
+from functools import lru_cache
 
 class Settings(BaseSettings):
     SUPABASE_URL: str
