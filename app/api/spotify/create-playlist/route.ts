@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { NextResponse } from "next/server";
-import { refreshSpotifyToken } from "@/utils/spotify";
+import { refreshAndStoreSpotifyToken } from "@/utils/spotify";
 
 export async function POST(request: Request) {
   try {
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     });
 
     if (userResponse.status === 401) {
-      accessToken = await refreshSpotifyToken(user.id);
+      accessToken = await refreshAndStoreSpotifyToken(user.id);
     }
 
     const userData = await userResponse.json();

@@ -4,6 +4,8 @@ import SignOut from "@/components/sign-out";
 import ConnectSpotify from "@/components/connect-spotify";
 import DisconnectSpotify from "@/components/disconnect-spotify";
 import { headers } from 'next/headers';
+import { manualRefreshToken } from "@/utils/spotify";
+import RefreshTokenButton from './components/RefreshTokenButton';
 
 export default async function Profile() {
   const supabase = await createClient();
@@ -107,9 +109,12 @@ export default async function Profile() {
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Spotify Connection</h2>
               {isSpotifyConnected && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100">
-                  Connected
-                </span>
+                <div className="flex items-center">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-950 text-green-900 dark:text-green-100">
+                    Connected
+                  </span>
+                  <RefreshTokenButton userId={user.id} />
+                </div>
               )}
             </div>
             

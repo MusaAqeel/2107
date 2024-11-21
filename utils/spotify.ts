@@ -68,3 +68,13 @@ export async function refreshAndStoreSpotifyToken(userId: string) {
     throw error;
   }
 }
+
+export async function manualRefreshToken(userId: string) {
+  try {
+    const newToken = await refreshAndStoreSpotifyToken(userId);
+    return { success: true, token: newToken };
+  } catch (error) {
+    console.error('Manual refresh failed:', error);
+    return { success: false, error };
+  }
+}
