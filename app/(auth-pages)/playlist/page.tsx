@@ -3,9 +3,19 @@ import { redirect } from "next/navigation";
 import { headers } from 'next/headers';
 import { ReloadButton } from '@/components/ReloadButton';
 import { AnimatedPlaylistGrid } from '@/components/AnimatedPlaylistGrid';
-import { refreshSpotifyToken } from '@/utils/spotify';
+import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
 import { SpotifySearchWrapper } from '@/components/spotify-search-wrapper';
 import { CreatePlaylistForm } from '@/components/create-playlist-form';
+
+async function refreshTokenOnLoad(userId: string, currentToken: string) {
+  try {
+    const newToken = await refreshAndStoreSpotifyToken(userId);
+    return newToken;
+  } catch (error) {
+    console.error('Error refreshing token on load:', error);
+    return currentToken;
+  }
+}
 
 interface Playlist {
   id: string;
@@ -25,7 +35,7 @@ async function getSpotifyPlaylists(accessToken: string, userId: string): Promise
 
   if (response.status === 401) {
     // Token expired, refresh it
-    const newToken = await refreshSpotifyToken(userId);
+    const newToken = await refreshAndStoreSpotifyToken(userId);
     return getSpotifyPlaylists(newToken, userId);
   }
 
@@ -59,11 +69,14 @@ export default async function PlaylistPage() {
     redirect('/profile?error=spotify_not_connected');
   }
 
+  // Refresh token on page load
+  const accessToken = await refreshTokenOnLoad(user.id, spotifyConnection.access_token);
+
   let playlists: Playlist[] = [];
   let error = null;
 
   try {
-    playlists = await getSpotifyPlaylists(spotifyConnection.access_token, user.id);
+    playlists = await getSpotifyPlaylists(accessToken, user.id);
   } catch (e) {
     error = 'Failed to load playlists';
     console.error('Error fetching playlists:', e);
@@ -88,13 +101,13 @@ export default async function PlaylistPage() {
             
             <div className="mt-6">
               <CreatePlaylistForm 
-                accessToken={spotifyConnection.access_token}
+                accessToken={accessToken}
               />
             </div>
 
             <div className="mt-6">
               <SpotifySearchWrapper 
-                accessToken={spotifyConnection.access_token}
+                accessToken={accessToken}
               />
             </div>
           </div>

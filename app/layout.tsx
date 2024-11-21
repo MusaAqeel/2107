@@ -4,6 +4,8 @@ import { GeistSans } from "geist/font/sans";
 import { ThemeProvider } from "next-themes";
 import Link from "next/link";
 import "./globals.css";
+import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
+import { createClient } from "@/utils/supabase/server";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -15,11 +17,24 @@ export const metadata = {
   description: "Experience personalized music with Mixify, your AI DJ",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  // If user is logged in, refresh their Spotify token
+  if (user?.id) {
+    try {
+      await refreshAndStoreSpotifyToken(user.id);
+    } catch (error) {
+      console.error('Failed to refresh Spotify token:', error);
+      // Handle error appropriately - maybe redirect to reconnect Spotify
+    }
+  }
+
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">
