@@ -6,6 +6,7 @@ import Link from "next/link";
 import "./globals.css";
 import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
 import { createClient } from "@/utils/supabase/server";
+import { Toaster } from 'sonner';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -23,16 +24,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  // If user is logged in, refresh their Spotify token
-  if (user?.id) {
-    try {
-      await refreshAndStoreSpotifyToken(user.id);
-    } catch (error) {
-      console.error('Failed to refresh Spotify token:', error);
-      // Handle error appropriately - maybe redirect to reconnect Spotify
+  
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Auth error:', error);
     }
+
+    if (user) {
+      const token = await refreshAndStoreSpotifyToken(user.id);
+      console.log('Refreshed Spotify token:', token);
+    }
+  } catch (error) {
+    console.error('Layout error:', error);
   }
 
   return (
@@ -44,6 +48,7 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Toaster position="top-center" />
           <main className="min-h-screen flex flex-col items-center">
             <div className="flex-1 w-full flex flex-col gap-20 items-center">
               <nav className="w-full flex justify-center border-b border-b-foreground/10 h-16">

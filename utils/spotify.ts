@@ -1,9 +1,8 @@
 import { createClient } from "@/utils/supabase/server";
 
-export async function refreshAndStoreSpotifyToken(userId: string) {
+export async function refreshAndStoreSpotifyToken(userId: string, forceRefresh: boolean = false) {
   const supabase = await createClient();
   
-  // First get the existing spotify connection
   const { data: spotifyConnection, error: connectionError } = await supabase
     .from('user_connections')
     .select('*')
@@ -17,12 +16,10 @@ export async function refreshAndStoreSpotifyToken(userId: string) {
   }
 
   try {
-    // Check if token needs refresh (expires in 1 hour)
     const expiresAt = new Date(spotifyConnection.expires_at);
     const now = new Date();
     
-    // Refresh if token expires in less than 5 minutes or is expired
-    if (expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
+    if (forceRefresh || expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
       const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
@@ -43,7 +40,6 @@ export async function refreshAndStoreSpotifyToken(userId: string) {
         throw new Error(`Failed to refresh token: ${JSON.stringify(data)}`);
       }
 
-      // Update the tokens in database
       const { error: updateError } = await supabase
         .from('user_connections')
         .update({ 
@@ -58,13 +54,23 @@ export async function refreshAndStoreSpotifyToken(userId: string) {
         throw updateError;
       }
 
+      console.log('Token refreshed successfully');
       return data.access_token;
     }
 
-    // Return existing token if it's still valid
     return spotifyConnection.access_token;
   } catch (error) {
     console.error('Error in refreshAndStoreSpotifyToken:', error);
     throw error;
+  }
+}
+
+export async function manualRefreshToken(userId: string) {
+  try {
+    const newToken = await refreshAndStoreSpotifyToken(userId, true);
+    return { success: true, token: newToken };
+  } catch (error) {
+    console.error('Manual refresh failed:', error);
+    return { success: false, error };
   }
 }
