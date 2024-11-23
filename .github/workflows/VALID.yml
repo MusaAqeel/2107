@@ -3,9 +3,7 @@ name: Check PR Validity
 on: 
   pull_request:
     branches:
-      - main
-      - staging
-      - prod
+      - "*"
   workflow_dispatch:
 
 jobs:
