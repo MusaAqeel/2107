@@ -32,6 +32,7 @@ export async function refreshAndStoreSpotifyToken(userId: string, forceRefresh: 
           grant_type: 'refresh_token',
           refresh_token: spotifyConnection.refresh_token,
         }).toString(),
+        cache: 'no-store',
       });
 
       const data = await response.json();
