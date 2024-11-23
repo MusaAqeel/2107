@@ -2,7 +2,8 @@ name: PR Branch Name Check
 
 on:
   pull_request:
-    branches: [main, staging, prod]
+    branches:
+      - "*"
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -14,7 +15,7 @@ jobs:
         run: |
           echo "Branch name is ${{ github.head_ref }}"
           BRANCH_NAME="${{ github.head_ref }}"
-          if [[ "$BRANCH_NAME" =~ ^(maqeel|psilva|gchawda|tcarter)/(dev|bug|fix)/.+$ ]]; then
+          if [[ "$BRANCH_NAME" =~ ^((maqeel|psilva|gchawda|tcarter)/(dev|bug|fix)/.+|staging-[0-9]{1,2}/[0-9]{1,2}/[0-9]{4})$ ]]; then
             echo "valid=true" >> $GITHUB_OUTPUT
           else
             echo "valid=false" >> $GITHUB_OUTPUT
@@ -28,7 +29,7 @@ jobs:
             const isValid = '${{ steps.check_branch.outputs.valid }}' === 'true';
             const message = isValid
               ? '✅ **Branch name is valid.**'
-              : '❌ **Branch name is invalid.**\n\nBranch names should follow the format: `{user}/{branch_type}/{feature_name}`\n\n- **User** must be one of: `maqeel`, `psilva`, `gchawda`, `tcarter`.\n- **Branch type** must be one of: `dev`, `bug`, `fix`.\n- **Feature name** is required and can be any valid string.';
+              : '❌ **Branch name is invalid.**\n\nBranch names should follow either:\n1. Format: `{user}/{branch_type}/{feature_name}`\n   - **User** must be one of: `maqeel`, `psilva`, `gchawda`, `tcarter`\n   - **Branch type** must be one of: `dev`, `bug`, `fix`\n   - **Feature name** is required and can be any valid string\n2. Format: `staging-MM/DD/YYYY`';
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
