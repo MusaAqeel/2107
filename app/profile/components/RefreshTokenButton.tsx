@@ -20,7 +20,7 @@ const RefreshTokenButton: FC<RefreshTokenButtonProps> = ({ userId }) => {
         throw new Error(data.error || 'Failed to refresh token');
       }
       
-      toast.success('Token refreshed successfully');
+      toast.success('Token refreshed successfully!');
       window.location.reload();
     } catch (error) {
       console.error('Refresh error:', error);

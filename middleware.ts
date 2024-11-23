@@ -12,9 +12,9 @@ export async function middleware(request: NextRequest) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
-    // If user is authenticated, refresh Spotify token
+    // Force refresh token on each middleware call
     if (user?.id) {
-      await refreshAndStoreSpotifyToken(user.id);
+      await refreshAndStoreSpotifyToken(user.id, true);
     }
   } catch (error) {
     console.error('Error refreshing Spotify token:', error);

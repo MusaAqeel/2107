@@ -32,7 +32,7 @@ export default async function RootLayout({
     }
 
     if (user) {
-      const token = await refreshAndStoreSpotifyToken(user.id);
+      const token = await refreshAndStoreSpotifyToken(user.id, true);
       console.log('Refreshed Spotify token:', token);
     }
   } catch (error) {
