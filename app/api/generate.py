@@ -60,23 +60,13 @@ def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
 
     return track_ids
 
-# @router.post("")
-# async def get_recommendations(request: ChatRequest):
-#     try:
-#         recommendations = get_gpt_recommendations(request.prompt)
-#         track_ids = get_track_ids(recommendations, request.auth_token)
-#         return track_ids
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
 @router.post("")
 async def get_recommendations(request: ChatRequest):
     try:
-        logger.debug(f"Received request with prompt: {request.prompt}")
-        # For testing, return dummy data
-        return ["track1", "track2", "track3", "track4", "track5"]
+        recommendations = get_gpt_recommendations(request.prompt)
+        track_ids = get_track_ids(recommendations, request.auth_token)
+        return track_ids
     except Exception as e:
-        logger.error(f"Error in get_recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/test")
