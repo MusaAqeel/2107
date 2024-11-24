@@ -5,6 +5,9 @@ from openai import OpenAI
 import json
 import requests
 from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -14,6 +17,7 @@ class ChatRequest(BaseModel):
 
 def get_gpt_recommendations(prompt: str) -> dict:
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
     completion = client.chat.completions.create(
         model="gpt-4o",
         messages=[
@@ -30,7 +34,7 @@ def get_gpt_recommendations(prompt: str) -> dict:
             """},
             {"role": "user", "content": prompt}
         ]
-    )
+    ) 
     return json.loads(completion.choices[0].message.content.replace('```json', '').replace('```', '').strip())
 
 def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
@@ -50,9 +54,11 @@ def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
         }
         
         try:
+            logger.debug('try statement')
             response = requests.get(url, headers=headers, params=params)
             response.raise_for_status()
             data = response.json()
+            logger.debug(f'dataoutput {data}')
             if data['tracks']['items']:
                 track_ids.append(data['tracks']['items'][0]['id'])
         except:
@@ -65,7 +71,7 @@ async def get_recommendations(request: ChatRequest):
     try:
         recommendations = get_gpt_recommendations(request.prompt)
         track_ids = get_track_ids(recommendations, request.auth_token)
-        return track_ids
+        return {"recommendations": recommendations, "track_ids": track_ids}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
