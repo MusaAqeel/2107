@@ -1,10 +1,13 @@
 # api/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from generate import router as generate_router
-from playlist import router as playlist_router
+from api.generate import router as generate_router
+from api.playlist import router as playlist_router
+import logging
 
-app = FastAPI()
+logging.basicConfig(level=logging.DEBUG)
+
+app = FastAPI(debug=True)
 
 # Configure CORS
 origins = [
