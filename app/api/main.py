@@ -1,20 +1,23 @@
 # api/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from generate import router as generate_router
-from playlist import router as playlist_router
+from .generate import router as generate_router
+from .playlist import router as playlist_router
+import os
 
 app = FastAPI()
 
-# Configure CORS
 origins = [
-    "http://localhost:3000",    # Next.js development server
-    "http://localhost:8000",    # FastAPI server
+    "http://localhost:3000",
+    "http://localhost:8000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
+    "https://*.vercel.app",
 ]
 
-# Add CORS middleware
+if os.getenv("NEXT_PUBLIC_APP_URL"):
+    origins.append(os.getenv("NEXT_PUBLIC_APP_URL"))
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -23,9 +26,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add routers
-app.include_router(generate_router, prefix="/api/generate")
-app.include_router(playlist_router, prefix="/api/playlist")
+app.include_router(generate_router, prefix="/generate", tags=["generate"])
+app.include_router(playlist_router, prefix="/playlist", tags=["playlist"])
 
 
 if __name__ == "__main__":
