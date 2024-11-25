@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from generate import router as generate_router
 from playlist import router as playlist_router
+from dotenv import load_dotenv
+import os
 
 app = FastAPI()
 
@@ -22,6 +24,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+load_dotenv()
 
 # Add routers
 app.include_router(generate_router, prefix="/api/generate")
