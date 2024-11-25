@@ -11,22 +11,23 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     prompt: str
     auth_token: str
+    playlist_length: int = 5
 
-def get_gpt_recommendations(prompt: str) -> dict:
+def get_gpt_recommendations(prompt: str, playlist_length: int = 5) -> dict:
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     completion = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4",
         messages=[
-            {"role": "system", "content": """
-                You are a Spotify playlist curator. Your task is to analyze user prompts and generate song recommendations. Always return a JSON array containing exactly 5 song recommendations. Each song must include "title" and "artist" fields.
+            {"role": "system", "content": f"""
+                You are a Spotify playlist curator. Your task is to analyze user prompts and generate song recommendations. Always return a JSON array containing exactly {playlist_length} song recommendations. Each song must include "title" and "artist" fields.
 
                 Example format:
-                {
+                {{
                     "recommendations": [
-                        {"title": "Song Name", "artist": "Artist Name"},
-                        {"title": "Another Song", "artist": "Another Artist"}
+                        {{"title": "Song Name", "artist": "Artist Name"}},
+                        {{"title": "Another Song", "artist": "Another Artist"}}
                     ]
-                }
+                }}
             """},
             {"role": "user", "content": prompt}
         ]
@@ -63,7 +64,7 @@ def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
 @router.post("")
 async def get_recommendations(request: ChatRequest):
     try:
-        recommendations = get_gpt_recommendations(request.prompt)
+        recommendations = get_gpt_recommendations(request.prompt, request.playlist_length)
         track_ids = get_track_ids(recommendations, request.auth_token)
         return track_ids
     except Exception as e:

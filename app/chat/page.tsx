@@ -93,6 +93,10 @@ const Chat = () => {
             setShow(true);
         } catch (error) {
             console.error('Generation error:', error);
+            if (error instanceof Response) {
+                const text = await error.text();
+                console.error('Error response:', text);
+            }
             setShowInputAlert(true);
         } finally {
             setGenerating(false);
@@ -112,7 +116,7 @@ const Chat = () => {
                     "Authorization": `Bearer ${spotifyConnection.access_token}`
                 },
                 body: JSON.stringify({
-                    track_ids: data,
+                    track_ids: data.recommendations,
                     title: inputValue,
                     description: `Generated playlist based on: ${inputValue}`
                 }),
