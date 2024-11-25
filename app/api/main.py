@@ -1,13 +1,10 @@
 # api/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from api.generate import router as generate_router
-from api.playlist import router as playlist_router
-import logging
+from generate import router as generate_router
+from playlist import router as playlist_router
 
-logging.basicConfig(level=logging.DEBUG)
-
-app = FastAPI(debug=True)
+app = FastAPI()
 
 # Configure CORS
 origins = [
@@ -30,9 +27,6 @@ app.add_middleware(
 app.include_router(generate_router, prefix="/api/generate")
 app.include_router(playlist_router, prefix="/api/playlist")
 
-@app.get("/api/health")
-async def health_check():
-    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
