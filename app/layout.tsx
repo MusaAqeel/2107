@@ -69,10 +69,10 @@ export default async function RootLayout({
                         Playlists
                       </Link>
                       <Link 
-                        href="/" 
+                        href="/create" 
                         className="text-sm text-foreground/60 hover:text-foreground"
                       >
-                        Home
+                        Create
                       </Link>
                     </div>
                   </div>

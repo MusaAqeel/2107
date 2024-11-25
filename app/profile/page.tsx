@@ -5,7 +5,7 @@ import ConnectSpotify from "@/components/connect-spotify";
 import DisconnectSpotify from "@/components/disconnect-spotify";
 import { headers } from 'next/headers';
 import { manualRefreshToken } from "@/utils/spotify";
-import RefreshTokenButton from './components/RefreshTokenButton';
+import RefreshTokenButton from '../../components/RefreshTokenButton';
 
 export default async function Profile() {
   const supabase = await createClient();
