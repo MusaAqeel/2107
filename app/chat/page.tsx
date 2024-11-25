@@ -69,38 +69,64 @@ const Chat = () => {
 
         setGenerating(true);
 
-        const response = await fetch("http://127.0.0.1:8000/api/generate", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                prompt: inputValue,
-                auth_token: spotifyConnection.access_token,
-            }),
-        });
+        try {
+            const response = await fetch("/api/python/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${spotifyConnection.access_token}`
+                },
+                body: JSON.stringify({
+                    prompt: inputValue,
+                    auth_token: spotifyConnection.access_token,
+                    playlist_length: playlistLength
+                }),
+            });
 
-        setData(await response.json());
-        setShow(true);
+            const responseData = await response.json();
+
+            if (!response.ok) {
+                throw new Error(responseData.detail || 'Failed to generate recommendations');
+            }
+
+            setData({ recommendations: responseData });
+            setShow(true);
+        } catch (error) {
+            console.error('Generation error:', error);
+            setShowInputAlert(true);
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const handlePlaylistSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!spotifyConnection) return;
+        if (!spotifyConnection || !data) return;
         setSave(true);
 
-        const response = await fetch("http://127.0.0.1:8000/api/playlist", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                prompt: inputValue,
-                auth_token: spotifyConnection.access_token,
-            }),
-        });
+        try {
+            const response = await fetch("/api/python/playlist", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${spotifyConnection.access_token}`
+                },
+                body: JSON.stringify({
+                    track_ids: data,
+                    title: inputValue,
+                    description: `Generated playlist based on: ${inputValue}`
+                }),
+            });
 
-        setData(await response.json());
+            if (!response.ok) {
+                throw new Error('Failed to create playlist');
+            }
+
+            const playlistUrl = await response.text();
+            window.open(playlistUrl, '_blank');
+        } catch (error) {
+            console.error('Playlist creation error:', error);
+        }
     };
 
     return (
@@ -145,14 +171,13 @@ const Chat = () => {
                         <AlertDescription>
                         <table>
                             <tbody>
-                                {data.recommendations.recommendations.map((recommendation: any, index: number) => (
-                                
+                                {data.recommendations.map((recommendation: any, index: number) => (
                                     <tr style={{padding: '10px'}} key={index}>
                                         <td style={{padding: '10px'}}>{recommendation.title}</td>
                                         <td style={{padding: '10px'}}>{recommendation.artist}</td>
                                     </tr>
                                 ))}
-                                 </tbody>
+                            </tbody>
                         </table>
                         </AlertDescription>
                     </Alert>
