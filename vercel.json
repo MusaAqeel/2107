@@ -9,7 +9,7 @@
             "use": "@vercel/next"
         },
         {
-            "src": "app/api/*.py",
+            "src": "app/api/**/*.py",
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "15mb",
@@ -32,6 +32,6 @@
         }
     ],
     "env": {
-        "PYTHONPATH": "app/api"
+        "PYTHONPATH": "."
     }
 }
