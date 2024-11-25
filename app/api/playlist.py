@@ -6,13 +6,13 @@ import requests
 router = APIRouter()
 security = HTTPBearer()
 
-@router.post("")
+@router.post("", response_model=str)
 async def create_playlist(
     track_ids: List[str] = Body(..., description="List of track IDs to add to playlist"),
     title: str = Query(..., description="The title of your playlist"),
     description: Optional[str] = Query(None, description="Description of your playlist"),
     credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+) -> str:
     try:
         token = credentials.credentials
         headers = {
@@ -68,10 +68,8 @@ async def create_playlist(
                 detail=f"Failed to add tracks: {add_tracks_response.text}"
             )
             
-        return {
-            "playlist_id": playlist_id,
-            "playlist_url": f"https://open.spotify.com/playlist/{playlist_id}"
-        }
+        # Return just the URL string
+        return f"https://open.spotify.com/playlist/{playlist_id}"
         
     except Exception as e:
         if isinstance(e, HTTPException):
