@@ -1,28 +1,46 @@
 "use client";
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/utils/supabase/client";
 import { redirect } from "next/navigation";
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { User } from '@supabase/supabase-js';
 
-const Chat = async () => {
-    const supabase = await createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
-    if (!user) {
-        redirect('/sign-in');
-    }
+interface UserConnection {
+    user_id: string;
+    provider: string;
+    access_token: string;
+}
 
-    // Get Spotify token from user_connections
-    const { data: spotifyConnection } = await supabase
-        .from('user_connections')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('provider', 'spotify')
-        .single();
+const Chat = () => {
+    const [user, setUser] = useState<User | null>(null);
+    const [spotifyConnection, setSpotifyConnection] = useState<UserConnection | null>(null);
+    const supabase = createClient();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error || !user) {
+                redirect('/sign-in');
+            }
+            setUser(user);
+
+            // Get Spotify connection
+            const { data: connection } = await supabase
+                .from('user_connections')
+                .select('*')
+                .eq('user_id', user.id)
+                .eq('provider', 'spotify')
+                .single();
+            
+            setSpotifyConnection(connection);
+        };
+
+        checkAuth();
+    }, []);
 
     const [inputValue, setInputValue] = useState<string>("");
     const [playlistLength, setPlaylistLength] = useState<number>(5);
@@ -44,7 +62,7 @@ const Chat = async () => {
         event.preventDefault();
         setShowInputAlert(false);
         
-        if (inputValue.trim() === "") {
+        if (inputValue.trim() === "" || !spotifyConnection) {
             setShowInputAlert(true);
             return;
         }
@@ -68,6 +86,7 @@ const Chat = async () => {
 
     const handlePlaylistSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        if (!spotifyConnection) return;
         setSave(true);
 
         const response = await fetch("http://127.0.0.1:8000/api/playlist", {
