@@ -1,13 +1,28 @@
 "use client";
 
-import React, { useState } from 'react';
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Image from 'next/image';
 
-const Chat = () => {
+const Chat = async () => {
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (!user) {
+        redirect('/sign-in');
+    }
+
+    // Get Spotify token from user_connections
+    const { data: spotifyConnection } = await supabase
+        .from('user_connections')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('provider', 'spotify')
+        .single();
 
     const [inputValue, setInputValue] = useState<string>("");
     const [playlistLength, setPlaylistLength] = useState<number>(5);
@@ -18,17 +33,14 @@ const Chat = () => {
     const [data, setData] = useState<any>(null);
     
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-            setInputValue((event.target.value).substring(0,25));
+        setInputValue((event.target.value).substring(0,25));
     };
 
     const handlePlaylistLengthChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPlaylistLength(parseInt(event.target.value));
     };
 
-    const YOUR_SPOTIFY_TOKEN = ""
-
     const handlePromptSubmit = async (event: React.FormEvent) => {
-    
         event.preventDefault();
         setShowInputAlert(false);
         
@@ -46,7 +58,7 @@ const Chat = () => {
             },
             body: JSON.stringify({
                 prompt: inputValue,
-                auth_token: YOUR_SPOTIFY_TOKEN,
+                auth_token: spotifyConnection.access_token,
             }),
         });
 
@@ -65,7 +77,7 @@ const Chat = () => {
             },
             body: JSON.stringify({
                 prompt: inputValue,
-                auth_token: YOUR_SPOTIFY_TOKEN,
+                auth_token: spotifyConnection.access_token,
             }),
         });
 

@@ -9,23 +9,26 @@
             "use": "@vercel/next"
         },
         {
-            "src": "app/api/**/*.py",
+            "src": "app/api/python/**/*.py",
             "use": "@vercel/python",
             "config": {
                 "maxLambdaSize": "15mb",
-                "runtime": "python3.10",
-                "requirementsPath": "./requirements.txt"
+                "runtime": "python3.10"
             }
         }
     ],
     "routes": [
         {
-            "src": "/api/generate",
-            "dest": "app/api/main.py"
+            "src": "/api/python",
+            "dest": "app/api/python/main.py"
         },
         {
-            "src": "/api/playlist",
-            "dest": "app/api/main.py"
+            "src": "/api/python/generate",
+            "dest": "app/api/python/main.py"
+        },
+        {
+            "src": "/api/python/playlist",
+            "dest": "app/api/python/main.py"
         },
         {
             "src": "/(.*)",
@@ -33,6 +36,6 @@
         }
     ],
     "env": {
-        "PYTHONPATH": "app/api"
+        "PYTHONPATH": "app/api/python"
     }
 }
