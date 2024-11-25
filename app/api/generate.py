@@ -31,7 +31,18 @@ def get_gpt_recommendations(prompt: str) -> dict:
             {"role": "user", "content": prompt}
         ]
     )
-    return json.loads(completion.choices[0].message.content.replace('```json', '').replace('```', '').strip())
+    
+    try:
+        content = completion.choices[0].message.content
+        clean_content = content.replace('```json', '').replace('```', '').strip()
+        recommendations = json.loads(clean_content)
+        
+        if not isinstance(recommendations, dict) or 'recommendations' not in recommendations:
+            raise ValueError("Invalid response format from GPT")
+        
+        return recommendations
+    except json.JSONDecodeError:
+        raise ValueError("Failed to parse GPT response as JSON")
 
 def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
     track_ids = []
@@ -42,11 +53,12 @@ def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
     }
 
     for song in recommendations['recommendations']:
-        query = f"track:{song['title']} artist:{song['artist']}"
+        query = f"\"{song['title']}\" artist:\"{song['artist']}\""
         params = {
             "q": query,
             "type": "track",
-            "limit": 1
+            "limit": 1,
+            "market": "US"
         }
         
         try:
