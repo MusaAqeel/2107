@@ -99,7 +99,7 @@ const Chat = () => {
 
         setGenerating(true);
 
-        const response = await fetch("api/generate", {
+        const response = await fetch("http://localhost:8000/api/generate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -107,6 +107,7 @@ const Chat = () => {
             body: JSON.stringify({
                 prompt: inputValue,
                 auth_token: accessToken,
+                playlist_length: playlistLength,
             }),
         });
 
@@ -124,7 +125,7 @@ const Chat = () => {
         });
     
         const response = await fetch(
-            `/api/playlist?${queryParams.toString()}`,
+            `http://localhost:8000/api/playlist?${queryParams.toString()}`,
             {
                 method: "POST",
                 headers: {
