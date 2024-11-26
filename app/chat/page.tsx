@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from "@/utils/supabase/client";
 import { stringify } from 'querystring';
+import { SpotifyConnectionStatus } from '../hooks/connectionStatus';
 
 const Chat = () => {
     // User sets LLM Prompt and Playlist Length
@@ -56,12 +57,7 @@ const Chat = () => {
               throw new Error('Not authenticated');
             }
     
-            const { data: spotifyConnection, error: connectionError } = await supabase
-              .from('user_connections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('provider', 'spotify')
-              .single();
+            const {spotifyConnection, connectionError} = await SpotifyConnectionStatus(user, supabase);
     
             if (connectionError || !spotifyConnection?.access_token) {
               throw new Error('Spotify not connected');
