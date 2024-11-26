@@ -60,14 +60,14 @@ export default function TestPage() {
       setLoading(true);
       setError('');
 
-      const response = await fetch('/api/generate', {
+      const response = await fetch('http://localhost:8000/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           prompt,
-          auth_token: accessToken,
         }),
       });
 
@@ -101,7 +101,7 @@ export default function TestPage() {
       setLoading(true);
       setError('');
 
-      const response = await fetch('/api/playlist', {
+      const response = await fetch('http://localhost:8000/api/playlist', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
