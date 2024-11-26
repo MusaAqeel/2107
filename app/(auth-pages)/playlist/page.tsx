@@ -4,8 +4,6 @@ import { headers } from 'next/headers';
 import { ReloadButton } from '@/components/ReloadButton';
 import { AnimatedPlaylistGrid } from '@/components/AnimatedPlaylistGrid';
 import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
-import { SpotifySearchWrapper } from '@/components/spotify-search-wrapper';
-import { CreatePlaylistForm } from '@/components/create-playlist-form';
 
 async function refreshTokenOnLoad(userId: string, currentToken: string) {
   try {
@@ -97,18 +95,6 @@ export default async function PlaylistPage() {
                 Your Playlists
               </h1>
               <ReloadButton />
-            </div>
-            
-            <div className="mt-6">
-              <CreatePlaylistForm 
-                accessToken={accessToken}
-              />
-            </div>
-
-            <div className="mt-6">
-              <SpotifySearchWrapper 
-                accessToken={accessToken}
-              />
             </div>
           </div>
         </div>
