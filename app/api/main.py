@@ -2,12 +2,17 @@ from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import os
 import json
 import requests
 from openai import OpenAI
 from dotenv import load_dotenv
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
@@ -45,13 +50,23 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     prompt: str
     auth_token: str
-    playlist_length: int = 5  # Default to 5 if not provided
+    playlist_length: int = 5
 
-# Generate Route Functions
+class TrackSearchResult(BaseModel):
+    track_id: str
+    found: bool
+    original: Dict
+    matched: Optional[Dict] = None
+
+class PlaylistCreateRequest(BaseModel):
+    track_ids: List[str]
+    title: str
+    description: Optional[str] = None
+
 def get_gpt_recommendations(prompt: str, playlist_length: int) -> dict:
+    logger.info(f"Generating recommendations for prompt: {prompt}, length: {playlist_length}")
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
-    # Modify the system prompt to include the dynamic playlist length
     system_prompt = f"""
     You are a Spotify playlist curator. Your task is to analyze user prompts 
     and generate song recommendations. Always return a JSON array containing 
@@ -77,63 +92,129 @@ def get_gpt_recommendations(prompt: str, playlist_length: int) -> dict:
     
     try:
         content = completion.choices[0].message.content
+        logger.info(f"GPT response: {content}")
         clean_content = content.replace('```json', '').replace('```', '').strip()
         recommendations = json.loads(clean_content)
         
         if not isinstance(recommendations, dict) or 'recommendations' not in recommendations:
             raise ValueError("Invalid response format from GPT")
         
-        # Validate that we got the correct number of recommendations
         if len(recommendations['recommendations']) != playlist_length:
             raise ValueError(f"GPT returned {len(recommendations['recommendations'])} recommendations instead of {playlist_length}")
         
         return recommendations
     except json.JSONDecodeError:
+        logger.error("Failed to parse GPT response as JSON")
         raise ValueError("Failed to parse GPT response as JSON")
 
-def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
-    track_ids = []
-    url = "https://api.spotify.com/v1/search"
+def search_track(song: dict, auth_token: str, try_alternative: bool = False) -> Optional[dict]:
+    """Search for a track on Spotify with fallback options."""
     headers = {
         "Authorization": f"Bearer {auth_token}",
         "Content-Type": "application/json"
     }
-
-    for song in recommendations['recommendations']:
-        query = f"\"{song['title']}\" artist:\"{song['artist']}\""
-        params = {
-            "q": query,
-            "type": "track",
-            "limit": 1,
-            "market": "US"
-        }
+    
+    # First try: exact match with both title and artist
+    if not try_alternative:
+        query = f'track:"{song["title"]}" artist:"{song["artist"]}"'
+        logger.info(f"Trying exact search for: {song['title']} by {song['artist']}")
+    else:
+        # Second try: more lenient search
+        query = f'{song["title"]} {song["artist"]}'
+        logger.info(f"Trying lenient search for: {song['title']} by {song['artist']}")
+    
+    params = {
+        "q": query,
+        "type": "track",
+        "limit": 1,
+        "market": "US"
+    }
+    
+    try:
+        logger.info(f"Searching Spotify with query: {query}")
+        response = requests.get(
+            "https://api.spotify.com/v1/search",
+            headers=headers,
+            params=params
+        )
+        response.raise_for_status()
+        data = response.json()
         
-        try:
-            response = requests.get(url, headers=headers, params=params)
-            response.raise_for_status()
-            data = response.json()
-            if data['tracks']['items']:
-                track_ids.append(data['tracks']['items'][0]['id'])
-        except:
-            continue
+        if data['tracks']['items']:
+            found_track = data['tracks']['items'][0]
+            logger.info(f"Found track: {found_track['name']} by {found_track['artists'][0]['name']} (ID: {found_track['id']})")
+            return found_track
+        else:
+            logger.warning(f"No tracks found for query: {query}")
+            return None
+    except Exception as e:
+        logger.error(f"Error searching Spotify: {str(e)}")
+        return None
 
-    return track_ids
+def get_track_ids(recommendations: dict, auth_token: str) -> List[TrackSearchResult]:
+    """Get track IDs with detailed search results and fallback options."""
+    search_results = []
+    logger.info(f"Starting search for {len(recommendations['recommendations'])} tracks")
+    
+    for i, song in enumerate(recommendations['recommendations'], 1):
+        logger.info(f"\nProcessing song {i}: {song['title']} by {song['artist']}")
+        
+        # Try exact match first
+        track = search_track(song, auth_token, try_alternative=False)
+        
+        if not track:
+            logger.info("Exact match failed, trying alternative search")
+            # If exact match fails, try more lenient search
+            track = search_track(song, auth_token, try_alternative=True)
+        
+        if track:
+            logger.info(f"Final match found: {track['name']} by {track['artists'][0]['name']}")
+        else:
+            logger.warning(f"No match found for: {song['title']} by {song['artist']}")
+        
+        result = TrackSearchResult(
+            track_id=track['id'] if track else "",
+            found=bool(track),
+            original=song,
+            matched={
+                'title': track['name'],
+                'artist': track['artists'][0]['name']
+            } if track else None
+        )
+        
+        search_results.append(result)
+    
+    return search_results
 
-# Routes
 @app.post("/api/generate")
 async def get_recommendations(request: ChatRequest):
     try:
+        logger.info("Starting recommendation generation")
         recommendations = get_gpt_recommendations(request.prompt, request.playlist_length)
-        track_ids = get_track_ids(recommendations, request.auth_token)
-        return {"recommendations": recommendations, "track_ids": track_ids}
+        logger.info("Starting Spotify track search")
+        search_results = get_track_ids(recommendations, request.auth_token)
+        
+        # Filter found tracks for playlist creation
+        track_ids = [result.track_id for result in search_results if result.found]
+        logger.info(f"Found {len(track_ids)} valid track IDs out of {len(search_results)} recommendations")
+        
+        return {
+            "recommendations": recommendations,
+            "track_ids": track_ids,
+            "search_results": [result.dict() for result in search_results],
+            "stats": {
+                "total": len(search_results),
+                "found": len(track_ids),
+                "missing": len(search_results) - len(track_ids)
+            }
+        }
     except Exception as e:
+        logger.error(f"Error in get_recommendations: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/playlist", response_model=str)
 async def create_playlist(
-    track_ids: List[str] = Body(..., description="List of track IDs to add to playlist"),
-    title: str = Query(..., description="The title of your playlist"),
-    description: Optional[str] = Query(None, description="Description of your playlist"),
+    request: PlaylistCreateRequest,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> str:
     try:
@@ -157,8 +238,8 @@ async def create_playlist(
         
         # Create playlist
         playlist_data = {
-            "name": title,
-            "description": description or "",
+            "name": request.title,
+            "description": request.description or "",
             "public": True
         }
         
@@ -177,7 +258,7 @@ async def create_playlist(
         playlist_id = playlist_response.json()['id']
         
         # Add tracks
-        track_uris = [f"spotify:track:{track_id}" for track_id in track_ids]
+        track_uris = [f"spotify:track:{track_id}" for track_id in request.track_ids]
         
         add_tracks_response = requests.post(
             f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks",

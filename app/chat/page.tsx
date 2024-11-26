@@ -6,7 +6,6 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from "@/utils/supabase/client";
-import { stringify } from 'querystring';
 
 const Chat = () => {
     // User sets LLM Prompt and Playlist Length
@@ -77,7 +76,6 @@ const Chat = () => {
     }, []);
 
     useEffect(() => {
-        
         if (!accessToken) {
           setError('No Spotify Account Connected');
         }
@@ -86,9 +84,7 @@ const Chat = () => {
         }
     }, [accessToken]);
 
-
-
-    const handlePromptSubmit = async (event: React.FormEvent) => {
+    const handlePromptSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setShowInputAlert(false);
         
@@ -99,7 +95,7 @@ const Chat = () => {
 
         setGenerating(true);
 
-        const response = await fetch("http://localhost:8000/api/generate", {
+        const response = await fetch("/api/generate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -113,32 +109,37 @@ const Chat = () => {
 
         setData(await response.json());
         setShowLLMOutput(true);
+        setGenerating(false);
     };
 
     const handlePlaylistSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setSavePlaylist(true);
 
-        const queryParams = new URLSearchParams({
-            title: playlistName,
-            description: playlistDescription,
-        });
-    
-        const response = await fetch(
-            `http://localhost:8000/api/playlist?${queryParams.toString()}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify(
-                    data.track_ids,
-                ),
-            }
-        );
-        setPlaylistURL( await response.json() );
-        setShowLink(true);
+        try {
+            const response = await fetch(
+                `/api/playlist`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        track_ids: data.track_ids,
+                        title: playlistName,
+                        description: playlistDescription
+                    }),
+                }
+            );
+            const url = await response.text();
+            setPlaylistURL(url);
+            setShowLink(true);
+        } catch (error) {
+            console.error("Error creating playlist:", error);
+            setError("Failed to create playlist");
+            setSavePlaylist(false);
+        }
     };
 
     return (
@@ -147,7 +148,6 @@ const Chat = () => {
             <div className={styles.container}>
             <div className={styles.title}><h1>Mixify</h1></div>
                 <form className={styles.form} data-testid='form' onSubmit={handlePromptSubmit}>
-                    
                     <h2>What can I help you with today?</h2>
                     <Input maxLength={25} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
                     {showInputAlert && (
@@ -175,7 +175,7 @@ const Chat = () => {
                         {error}
                         </div>
                     )}
-                    <Button variant="outline" size="lg" type="submit" onClick={handlePromptSubmit} data-testid='submitButton' disabled={error !== null}>
+                    <Button variant="outline" size="lg" type="submit" disabled={error !== null}>
                         {generating ? 'Generation in process' : 'Submit'}
                     </Button>
                 </form>
@@ -188,19 +188,20 @@ const Chat = () => {
                         <table>
                             <tbody>
                                 {data.recommendations.recommendations.map((recommendation: any, index: number) => (
-                                
                                     <tr style={{padding: '10px'}} key={index}>
                                         <td style={{padding: '10px'}}>{recommendation.title}</td>
                                         <td style={{padding: '10px'}}>{recommendation.artist}</td>
                                     </tr>
                                 ))}
-                                 </tbody>
+                            </tbody>
                         </table>
                         </AlertDescription>
                     </Alert>
                     {showLink ? (                    
                         <Alert data-testid='alert'>
-                            <a href={playlistURL}>Link to playlist</a>
+                            <a href={playlistURL?.replace(/["']/g, '')} target="_blank" rel="noopener noreferrer">
+                                Link to playlist
+                            </a>
                         </Alert>
                     ) : null
                     }
@@ -218,6 +219,5 @@ const Chat = () => {
         </>
     );
 }
-
 
 export default Chat;
