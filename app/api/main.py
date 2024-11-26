@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict
 import os
 import json
 import requests
@@ -14,20 +14,22 @@ client = OpenAI()
 load_dotenv()
 app = FastAPI()
 security = HTTPBearer()
+
 origins = [
     "http://localhost:3000",
     "http://localhost:8000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
     "https://*.vercel.app",
+    os.getenv("NEXT_PUBLIC_APP_URL")
 ]
+
 # Initialize Supabase
 supabase: Client = create_client(
     supabase_url=os.getenv("SUPABASE_URL"),
     supabase_key=os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 )
 
-# CORS configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -36,16 +38,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Models
 class ChatRequest(BaseModel):
     prompt: str
+    auth_token: str  # Added to match frontend request
 
-class PlaylistRequest(BaseModel):
-    track_ids: List[str]
+class SpotifyTrack(BaseModel):
     title: str
-    description: Optional[str] = None
+    artist: str
 
-def get_gpt_recommendations(prompt: str) -> dict:
+class GPTResponse(BaseModel):
+    recommendations: List[SpotifyTrack]
+
+def get_gpt_recommendations(prompt: str) -> Dict:
     """Generate song recommendations using GPT-4"""
     try:
         completion = client.chat.completions.create(
@@ -76,7 +80,6 @@ def get_gpt_recommendations(prompt: str) -> dict:
         if not isinstance(recommendations, dict) or 'recommendations' not in recommendations:
             raise ValueError("Invalid response format from GPT")
         
-        print(f"GPT Recommendations: {recommendations}")
         return recommendations
         
     except Exception as e:
@@ -92,8 +95,6 @@ def search_spotify_tracks(recommendations: dict, auth_token: str) -> List[str]:
         "Content-Type": "application/json"
     }
 
-    print(f"Starting Spotify search with token: {auth_token[:10]}...")
-
     for song in recommendations['recommendations']:
         query = f"\"{song['title']}\" artist:\"{song['artist']}\""
         params = {
@@ -108,8 +109,6 @@ def search_spotify_tracks(recommendations: dict, auth_token: str) -> List[str]:
             response.raise_for_status()
             data = response.json()
             
-            print(f"Search response for {query}: {data['tracks']['total']} results")
-            
             if data['tracks']['items']:
                 track_ids.append(data['tracks']['items'][0]['id'])
         except Exception as e:
@@ -118,24 +117,15 @@ def search_spotify_tracks(recommendations: dict, auth_token: str) -> List[str]:
 
     return track_ids
 
-# API Routes
 @app.post("/api/generate")
-async def generate_recommendations(
-    request: ChatRequest,
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
+async def generate_recommendations(request: ChatRequest):
     """Generate and search for track recommendations"""
     try:
-        spotify_token = credentials.credentials
-        print(f"Processing request with prompt: {request.prompt}")
-        
         # Get GPT recommendations
         recommendations = get_gpt_recommendations(request.prompt)
-        print(f"Got recommendations: {recommendations}")
         
         # Search Spotify for tracks
-        track_ids = search_spotify_tracks(recommendations, spotify_token)
-        print(f"Found track IDs: {track_ids}")
+        track_ids = search_spotify_tracks(recommendations, request.auth_token)
         
         if not track_ids:
             raise HTTPException(
@@ -143,7 +133,11 @@ async def generate_recommendations(
                 detail="No matching tracks found on Spotify"
             )
         
-        return track_ids
+        # Return format matching frontend expectations
+        return {
+            "recommendations": recommendations,
+            "track_ids": track_ids
+        }
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -151,9 +145,11 @@ async def generate_recommendations(
         print(f"Error in generate_recommendations endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/playlist", response_model=str)
+@app.post("/api/playlist")
 async def create_playlist(
-    request: PlaylistRequest,
+    track_ids: List[str],
+    title: str,
+    description: Optional[str] = None,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ) -> str:
     """Create a Spotify playlist with the given tracks"""
@@ -172,8 +168,8 @@ async def create_playlist(
         
         # Create playlist
         playlist_data = {
-            "name": request.title,
-            "description": request.description or "",
+            "name": title,
+            "description": description or "",
             "public": True
         }
         
@@ -187,7 +183,7 @@ async def create_playlist(
         playlist_id = playlist_response.json()['id']
         
         # Add tracks
-        track_uris = [f"spotify:track:{track_id}" for track_id in request.track_ids]
+        track_uris = [f"spotify:track:{track_id}" for track_id in track_ids]
         add_tracks_url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
         add_tracks_response = requests.post(
             add_tracks_url,
@@ -208,7 +204,6 @@ async def create_playlist(
         print(f"Error in create_playlist endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Run the application
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8000, reload=True)
