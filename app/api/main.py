@@ -7,6 +7,16 @@ import os
 import json
 import requests
 from openai import OpenAI
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Validate required environment variables
+required_env_vars = ["OPENAI_API_KEY", "NEXT_PUBLIC_APP_URL"]
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 app = FastAPI()
 security = HTTPBearer()
@@ -35,24 +45,32 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     prompt: str
     auth_token: str
+    playlist_length: int = 5  # Default to 5 if not provided
 
 # Generate Route Functions
-def get_gpt_recommendations(prompt: str) -> dict:
+def get_gpt_recommendations(prompt: str, playlist_length: int) -> dict:
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    
+    # Modify the system prompt to include the dynamic playlist length
+    system_prompt = f"""
+    You are a Spotify playlist curator. Your task is to analyze user prompts 
+    and generate song recommendations. Always return a JSON array containing 
+    exactly {playlist_length} song recommendations. Each song must include 
+    "title" and "artist" fields.
+
+    Example format:
+    {{
+        "recommendations": [
+            {{"title": "Song Name", "artist": "Artist Name"}},
+            {{"title": "Another Song", "artist": "Another Artist"}}
+        ]
+    }}
+    """
+
     completion = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": """
-                You are a Spotify playlist curator. Your task is to analyze user prompts and generate song recommendations. Always return a JSON array containing exactly 5 song recommendations. Each song must include "title" and "artist" fields.
-
-                Example format:
-                {
-                    "recommendations": [
-                        {"title": "Song Name", "artist": "Artist Name"},
-                        {"title": "Another Song", "artist": "Another Artist"}
-                    ]
-                }
-            """},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ]
     )
@@ -64,6 +82,10 @@ def get_gpt_recommendations(prompt: str) -> dict:
         
         if not isinstance(recommendations, dict) or 'recommendations' not in recommendations:
             raise ValueError("Invalid response format from GPT")
+        
+        # Validate that we got the correct number of recommendations
+        if len(recommendations['recommendations']) != playlist_length:
+            raise ValueError(f"GPT returned {len(recommendations['recommendations'])} recommendations instead of {playlist_length}")
         
         return recommendations
     except json.JSONDecodeError:
@@ -101,7 +123,7 @@ def get_track_ids(recommendations: dict, auth_token: str) -> List[str]:
 @app.post("/api/generate")
 async def get_recommendations(request: ChatRequest):
     try:
-        recommendations = get_gpt_recommendations(request.prompt)
+        recommendations = get_gpt_recommendations(request.prompt, request.playlist_length)
         track_ids = get_track_ids(recommendations, request.auth_token)
         return {"recommendations": recommendations, "track_ids": track_ids}
     except Exception as e:
