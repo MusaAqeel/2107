@@ -1,0 +1,33 @@
+{
+    "version": 2,
+    "framework": "nextjs",
+    "buildCommand": "pnpm run build",
+    "installCommand": "pnpm install",
+    "builds": [
+        {
+            "src": "next.config.js",
+            "use": "@vercel/next"
+        },
+        {
+            "src": "app/api/main.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "15mb",
+                "runtime": "python3.10"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "app/api/main.py"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/$1"
+        }
+    ],
+    "env": {
+        "PYTHONPATH": "."
+    }
+}
