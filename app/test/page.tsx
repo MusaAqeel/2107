@@ -68,6 +68,7 @@ export default function TestPage() {
         },
         body: JSON.stringify({
           prompt,
+          auth_token: accessToken,
         }),
       });
 

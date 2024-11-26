@@ -115,6 +115,7 @@ const Chat = () => {
                 body: JSON.stringify({
                     prompt: inputValue,
                     auth_token: accessToken,
+                    playlist_length: playlistLength,
                 }),
             });
 

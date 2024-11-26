@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 import os
 import json
@@ -9,6 +9,7 @@ import requests
 from openai import OpenAI
 from supabase import create_client, Client
 from dotenv import load_dotenv
+
 
 client = OpenAI()
 load_dotenv()
@@ -37,7 +38,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 class ChatRequest(BaseModel):
     prompt: str
     auth_token: str  # Added to match frontend request
@@ -49,25 +49,30 @@ class SpotifyTrack(BaseModel):
 class GPTResponse(BaseModel):
     recommendations: List[SpotifyTrack]
 
-def get_gpt_recommendations(prompt: str) -> Dict:
+class ChatRequest(BaseModel):
+    prompt: str
+    auth_token: str
+    playlist_length: int = Field(default=5, ge=1, le=25)  # Match frontend's range of 1-25
+
+def get_gpt_recommendations(prompt: str, playlist_length: int) -> Dict:
     """Generate song recommendations using GPT-4"""
     try:
         completion = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": """
+                {"role": "system", "content": f"""
                     You are a Spotify playlist curator. Your task is to analyze user prompts 
                     and generate song recommendations. Always return a JSON array containing 
-                    exactly 5 song recommendations. Each song must include "title" and 
+                    exactly {playlist_length} song recommendations. Each song must include "title" and 
                     "artist" fields.
                     
                     Example format:
-                    {
+                    {{
                         "recommendations": [
-                            {"title": "Song Name", "artist": "Artist Name"},
-                            {"title": "Another Song", "artist": "Another Artist"}
+                            {{"title": "Song Name", "artist": "Artist Name"}},
+                            {{"title": "Another Song", "artist": "Another Artist"}}
                         ]
-                    }
+                    }}
                 """},
                 {"role": "user", "content": prompt}
             ]
@@ -117,12 +122,14 @@ def search_spotify_tracks(recommendations: dict, auth_token: str) -> List[str]:
 
     return track_ids
 
+
+
 @app.post("/api/generate")
 async def generate_recommendations(request: ChatRequest):
     """Generate and search for track recommendations"""
     try:
-        # Get GPT recommendations
-        recommendations = get_gpt_recommendations(request.prompt)
+        # Get GPT recommendations with the requested playlist length
+        recommendations = get_gpt_recommendations(request.prompt, request.playlist_length)
         
         # Search Spotify for tracks
         track_ids = search_spotify_tracks(recommendations, request.auth_token)
@@ -133,7 +140,6 @@ async def generate_recommendations(request: ChatRequest):
                 detail="No matching tracks found on Spotify"
             )
         
-        # Return format matching frontend expectations
         return {
             "recommendations": recommendations,
             "track_ids": track_ids
@@ -203,6 +209,8 @@ async def create_playlist(
     except Exception as e:
         print(f"Error in create_playlist endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 if __name__ == "__main__":
     import uvicorn
