@@ -57,10 +57,10 @@ export default async function RootLayout({
                     <Link href="/">Mixify - Your AI DJ</Link>
                     <div className="flex items-center gap-2">
                       <Link 
-                        href="/profile" 
+                        href="/chat" 
                         className="text-sm text-foreground/60 hover:text-foreground"
                       >
-                        Profile
+                        Generate
                       </Link>
                       <Link 
                         href="/playlist" 
@@ -69,10 +69,10 @@ export default async function RootLayout({
                         Playlists
                       </Link>
                       <Link 
-                        href="/" 
+                        href="/profile" 
                         className="text-sm text-foreground/60 hover:text-foreground"
                       >
-                        Home
+                        Profile
                       </Link>
                     </div>
                   </div>
