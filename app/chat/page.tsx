@@ -84,7 +84,7 @@ const Chat = () => {
         }
     }, [accessToken]);
 
-    const handlePromptSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const handlePromptSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setShowInputAlert(false);
         
@@ -109,14 +109,12 @@ const Chat = () => {
 
         setData(await response.json());
         setShowLLMOutput(true);
-        setGenerating(false);
     };
 
     const handlePlaylistSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setSavePlaylist(true);
 
-        try {
             const response = await fetch(
                 `/api/playlist`,
                 {
@@ -132,14 +130,8 @@ const Chat = () => {
                     }),
                 }
             );
-            const url = await response.text();
-            setPlaylistURL(url);
-            setShowLink(true);
-        } catch (error) {
-            console.error("Error creating playlist:", error);
-            setError("Failed to create playlist");
-            setSavePlaylist(false);
-        }
+        setPlaylistURL( await response.json() );
+        setShowLink(true);
     };
 
     return (
@@ -147,7 +139,7 @@ const Chat = () => {
             { !showLLMOutput ? (
             <div className={styles.container}>
             <div className={styles.title}><h1>Mixify</h1></div>
-                <form className={styles.form} data-testid='form' onSubmit={handlePromptSubmit}>
+                <form className={styles.form} data-testid='form'>
                     <h2>What can I help you with today?</h2>
                     <Input maxLength={25} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
                     {showInputAlert && (
@@ -175,7 +167,7 @@ const Chat = () => {
                         {error}
                         </div>
                     )}
-                    <Button variant="outline" size="lg" type="submit" disabled={error !== null}>
+                    <Button variant="outline" size="lg" type="submit" onClick={handlePromptSubmit} data-testid='submitButton' disabled={error !== null}>
                         {generating ? 'Generation in process' : 'Submit'}
                     </Button>
                 </form>
