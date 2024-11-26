@@ -39,7 +39,7 @@ jest.mock('../../../utils/supabase/server.ts', () => {
 describe('email confirmation page', () => {
 
     beforeEach( async () => {
-        render( await CheckEmail({ searchParams: Promise.resolve({ success: "Test success", email: "test@test.com" }) }))
+        render( await CheckEmail({ searchParams: Promise.resolve({ success: "Test success", email: "test@test.com" }) }));
         screen.debug();
         info = screen.getByText(/We've sent you an email/);
         button = screen.getByTestId('submit');

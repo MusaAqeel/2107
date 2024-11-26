@@ -27,7 +27,7 @@ jest.mock("../../../components/submit-button", () => ({
 
 describe('login', () => {
     beforeEach(async () => {
-        render( await Login({ searchParams: Promise.resolve({ success: "Test success" }) }))
+        render( await Login({ searchParams: Promise.resolve({ success: "Test success" }) }));
         email = screen.getByTestId('emailInput');
         password = screen.getByTestId('passwordInput');
         button = screen.getByTestId('submit');

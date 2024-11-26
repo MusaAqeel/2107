@@ -37,7 +37,7 @@ jest.mock('../../../utils/supabase/server.ts', () => {
 
 describe('forgot password flow', () => {
     beforeEach( async () => {
-        render( await CompleteProfile({ searchParams: Promise.resolve({ success: "Test success" }) }))
+        render( await CompleteProfile({ searchParams: Promise.resolve({ success: "Test success" }) }));
         firstNameInput = screen.getByTestId('firstNameInput');
         lastNameInput = screen.getByTestId('lastNameInput');
         button = screen.getByTestId('submit');
