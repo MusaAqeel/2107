@@ -103,7 +103,7 @@ async def get_recommendations(request: ChatRequest):
     try:
         recommendations = get_gpt_recommendations(request.prompt)
         track_ids = get_track_ids(recommendations, request.auth_token)
-        return track_ids
+        return {"recommendations": recommendations, "track_ids": track_ids}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
