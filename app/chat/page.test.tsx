@@ -2,10 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
-import LLM from '../LLM/LLM';
 import React from 'react';
 
-jest.mock("../LLM/LLM");
 global.fetch = jest.fn() as jest.Mock;
 
 let input: HTMLInputElement;

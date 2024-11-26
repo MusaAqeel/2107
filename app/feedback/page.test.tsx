@@ -11,9 +11,10 @@ let button: HTMLElement;
 describe('feedback', () => {
     beforeEach(() => {
         render(<Feedback />);
-        input = screen.getByTestId('textInput');
-        button = screen.getByTestId('submitButton');
+        input = screen.getByTestId("textInput");
+        button = screen.getByTestId("submitButton");
     });
+
 
     it('renders title and submit button (TC-014)', () => {
         const title = screen.getByText(/Feedback/i);

@@ -6,6 +6,7 @@ import DisconnectSpotify from "@/components/disconnect-spotify";
 import { headers } from 'next/headers';
 import { manualRefreshToken } from "@/utils/spotify";
 import RefreshTokenButton from './components/RefreshTokenButton';
+import { SpotifyConnectionStatus } from "../hooks/connectionStatus";
 
 export default async function Profile() {
   const supabase = await createClient();
@@ -18,16 +19,7 @@ export default async function Profile() {
   }
 
   // Get Spotify connection status
-  const { data: spotifyConnection, error: connectionError } = await supabase
-    .from('user_connections')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('provider', 'spotify')
-    .single();
-
-  if (connectionError && connectionError.code !== 'PGRST116') {
-    console.error('Error fetching Spotify connection:', connectionError);
-  }
+  const {spotifyConnection} = await SpotifyConnectionStatus(user, supabase);
 
   const isSpotifyConnected = !!spotifyConnection?.access_token;
   
