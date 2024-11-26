@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 
-export default function ForgotPassword(props: { searchParams: Message }) {
-  const searchParams = props.searchParams;
+export default async function ForgotPassword(props: {
+  searchParams: Promise<Message>;
+}) {
+  const searchParams = await props.searchParams;
   return (
     <>
       <form className="flex-1 flex flex-col w-full gap-2 text-foreground [&>input]:mb-6 min-w-64 max-w-64 mx-auto">
         <div>
-          <h1 className="text-2xl font-medium">Reset Password</h1>
+          <h1 className="text-2xl font-medium" data-testid='title'>Reset Password</h1>
           <p className="text-sm text-secondary-foreground">
             Already have an account?{" "}
             <Link className="text-primary underline" href="/sign-in" data-testid='link'>
