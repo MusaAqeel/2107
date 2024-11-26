@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from "@/utils/supabase/client";
 import { stringify } from 'querystring';
+import { SpotifyConnectionStatus } from '../hooks/connectionStatus';
 
 const Chat = () => {
     // User sets LLM Prompt and Playlist Length
@@ -38,57 +39,8 @@ const Chat = () => {
         setPlaylistLength(parseInt(event.target.value));
     };
 
-    const handlePlaylistNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setPlaylistName(event.target.value);
-    };
-
-    const handlePlaylistDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setPlaylistDescription((event.target.value).substring(0,300));
-    };
-    
-    useEffect(() => {
-        const getSpotifyToken = async () => {
-          try {
-            const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (!user) {
-              throw new Error('Not authenticated');
-            }
-    
-            const { data: spotifyConnection, error: connectionError } = await supabase
-              .from('user_connections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('provider', 'spotify')
-              .single();
-    
-            if (connectionError || !spotifyConnection?.access_token) {
-              throw new Error('Spotify not connected');
-            }
-            
-            setAccessToken(spotifyConnection.access_token);
-          } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to get Spotify token');
-          }
-        };
-    
-        getSpotifyToken();
-    }, []);
-
-    useEffect(() => {
+    const handleSubmit = (event: React.FormEvent) => {
         
-        if (!accessToken) {
-          setError('No Spotify Account Connected');
-        }
-        else {
-            setError(null);
-        }
-    }, [accessToken]);
-
-
-
-    const handlePromptSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setShowInputAlert(false);
         
