@@ -56,7 +56,7 @@ describe('login', () => {
         expect(link).toBeTruthy();
     });
 
-    it('signs in successfully (TC-036)', () => {
+    it('signs up successfully (TC-036)', () => {
         fireEvent.change(email, { target: {value: 'testSuccess@test.com'}});
         fireEvent.change(password, { target: {value: 'Test12345!w'}});
         fireEvent.click(button);

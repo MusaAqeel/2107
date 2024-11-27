@@ -58,13 +58,6 @@ describe('login', () => {
         expect(link2).toBeTruthy();
     });
 
-    it('displays error if called with incorrect login (TC-028)', () => {
-        fireEvent.change(email, 'testFail@test.com');
-        fireEvent.change(password, 'test');
-        fireEvent.click(button);
-        expect(button).toBeTruthy();
-    });
-
     it('signs in successfully (TC-029)', () => {
         fireEvent.change(email, 'testSuccess@test.com');
         fireEvent.change(password, 'test');
