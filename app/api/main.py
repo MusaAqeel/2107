@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 import os
 import json
@@ -50,7 +50,7 @@ app.add_middleware(
 class ChatRequest(BaseModel):
     prompt: str
     auth_token: str
-    playlist_length: int = 5
+    playlist_length: int = Field(gt=0, le=25, description="Number of songs (1-25)")
 
 class TrackSearchResult(BaseModel):
     track_id: str
