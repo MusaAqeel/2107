@@ -1,9 +1,8 @@
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
 import React from 'react';
-import { LucideAlignHorizontalDistributeCenter } from 'lucide-react';
 
 let input: HTMLInputElement;
 let button: HTMLElement;
@@ -42,7 +41,6 @@ jest.mock("next/headers", () => ({
 }));
 
 describe('homepage', () => {
-    
     beforeEach(() => {
         render(<Chat />);
         input = screen.getByTestId('textInput');
@@ -73,7 +71,7 @@ describe('homepage', () => {
     });
     
     it ('renders title (TC-001)', () => {
-        const title = screen.getByText(/Mixify/i);
+        const title = screen.getByAltText('Dark logo');
         expect(title).toBeInTheDocument();
     });
 
@@ -102,7 +100,7 @@ describe('homepage', () => {
         expect(button.textContent).toBe("Generation in process");
     });
     
-    it('renders original prompt and list of songs when response received from LLM (TC-004)', async () => {
+    it('renders list of songs when response received from LLM (TC-004)', async () => {
         let alert = screen.queryByTestId('alert');
         expect(alert).toBeNull();
 
@@ -171,8 +169,8 @@ describe('homepage', () => {
     });
 
     it('limits the characters in the text box (TC-010)', () => {
-        const overLimitInput = "AAAAAAAAAAAAAAAAAAAAAAAAAXXX";
-        const maxInput = "AAAAAAAAAAAAAAAAAAAAAAAAA";
+        const overLimitInput = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAXXX";
+        const maxInput = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         fireEvent.change(input, {target: {value: overLimitInput}});
         fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
@@ -191,7 +189,7 @@ describe('homepage', () => {
     });
 
     it('has alt text for screen readers (TC-011)', () => {
-        const image = screen.getByAltText("Mixify logo");
+        const image = screen.getByAltText("Dark logo");
         expect(image).toBeInTheDocument();
     });
 
@@ -207,7 +205,7 @@ describe('homepage', () => {
         });
     });  
 
-    it('adjusts length based on slider (TC-013)', () => {
+    it('adjusts length in payload based on slider (TC-013)', () => {
         fireEvent.change(input, {target: {value: "test"}});
         fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);

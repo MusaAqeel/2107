@@ -47,12 +47,13 @@ describe('forgot password flow', () => {
         expect(title).toBeInTheDocument();
     });
 
-    it('renders firstName input (TC-044)', () => {
+    it('renders name inputs (TC-044)', () => {
         expect(firstNameInput).toBeTruthy();
+        expect(lastNameInput).toBeTruthy();
     });
 
-    it('renders sign in button (TC-045)', () => {
-        expect(lastNameInput).toBeTruthy();
+    it('renders submit button (TC-045)', () => {
+        expect(button).toBeTruthy();
     });
 
     it('calls the completeProfileAction (TC-046)', () => {
