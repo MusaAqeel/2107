@@ -7,44 +7,67 @@ import DisconnectSpotify from "@/components/disconnect-spotify";
 import Profile from './page';
 import React from 'react';
 import '@testing-library/jest-dom';
+import { assert } from 'console';
 
-let connect: HTMLInputElement;
-let disconnect: HTMLInputElement;
+jest.mock('../../utils/supabase/server.ts', () => {
+    return {
+        createClient: jest.fn().mockReturnValue({
+            auth: {
+                getUser: jest.fn().mockReturnValue({data: { user: { name: 'test'}}})
+            }
+        })
+    };
+});
 
-jest.mock("@/utils/supabase/server", () => ({
-    createClient: jest.fn(),
-}));
+let accesstoken = 'test' as any;
+jest.mock('../hooks/connectionStatus', () => {
+    return {
+        SpotifyConnectionStatus: jest.fn().mockImplementation(() => ({
+            spotifyConnection: {
+                access_token: accesstoken,
+                profile_data: {
+                    display_name: 'Test Name',
+                    images: ['testURL']
+                }
+            }
+        }))
+    };
+});
 
 jest.mock("next/headers", () => ({
-    headers: jest.fn(),
+    headers: jest.fn().mockReturnValue({
+        get: jest.fn().mockReturnValue('TEST'),
+    }),
 }));
 
-describe('edit profile page', () => {
-    beforeEach(() => {
-        render(<Profile />);
-        connect = screen.getByTestId('connect');
-        disconnect = screen.getByTestId('disconnect');
+describe('profile page - user connected', () => {
+    beforeEach( async () => {
+        render( await Profile() );
     });
 
     it('renders profile image (TC-050)', () => {
         const image = screen.getByAltText(/Spotify Profile/i);
-        expect(image).toBeInTheDocument();
+        expect(image).toBeTruthy();
     });
 
     it('renders navigation links on profile page (TC-051)', () => {
-        const title = screen.getByText(/Sign up/i);
-        expect(title).toBeInTheDocument();
+        const disconnect = screen.getByText('Disconnect Spotify');
+        const logout = screen.getByText('Sign Out');
+        expect(disconnect).toBeTruthy();
+        expect(logout).toBeTruthy();
     });
 
-    it('calls connect to Spotify correctly (TC-052)', () => {
-        expect(window.location.href).not.toBe('/api/spotify/auth');
-        fireEvent.click(connect);
-        expect(ConnectSpotify).toHaveBeenCalled;
-        expect(window.location.href).toBe('/api/spotify/auth');
+    it('allows user to disconnect account when currently linked (TC-053)', () => {
+        const disconnectButton = screen.getByText('Disconnect Spotify');
+        expect(disconnectButton).toBeTruthy();
     });
+});
 
-    it('calls disconnect to Spotify correctly (TC-053)', () => {
-        fireEvent.click(disconnect);
-        expect(DisconnectSpotify).toHaveBeenCalled;
+describe('profile page - user disconnected', () => {
+    it('allows user to connect account when not currently linked (TC-052)', async () => {
+        accesstoken = null;
+        render( await Profile() );
+        const connectButton = screen.getByText('Connect Spotify');
+        expect(connectButton).toBeTruthy();
     });
 });

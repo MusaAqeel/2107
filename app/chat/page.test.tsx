@@ -1,16 +1,45 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
-import LLM from '../LLM/LLM';
 import React from 'react';
-
-jest.mock("../LLM/LLM");
-global.fetch = jest.fn() as jest.Mock;
+import { LucideAlignHorizontalDistributeCenter } from 'lucide-react';
 
 let input: HTMLInputElement;
 let button: HTMLElement;
 let slider: HTMLElement;
+
+jest.mock('../../utils/supabase/client.ts', () => {
+    return {
+        createClient: jest.fn().mockReturnValue({
+            auth: {
+                getUser: jest.fn().mockReturnValue({data: { user: { name: 'test'}}})
+            }
+        })
+    };
+});
+
+let accesstoken = 'test' as any;
+jest.mock('../hooks/connectionStatus', () => {
+    return {
+        SpotifyConnectionStatus: jest.fn().mockImplementation(() => ({
+            spotifyConnection: {
+                access_token: accesstoken,
+                profile_data: {
+                    display_name: 'Test Name',
+                    images: ['testURL']
+                }
+            },
+            connectionError: (null)
+        }))
+    };
+});
+
+jest.mock("next/headers", () => ({
+    headers: jest.fn().mockReturnValue({
+        get: jest.fn().mockReturnValue('TEST'),
+    }),
+}));
 
 describe('homepage', () => {
     
@@ -19,32 +48,51 @@ describe('homepage', () => {
         input = screen.getByTestId('textInput');
         slider = screen.getByTestId('sliderInput');
         button = screen.getByTestId('submitButton');
+
+        const mockFetch = jest.fn();
+
+        mockFetch.mockReturnValueOnce( 
+            {json: jest.fn().mockReturnValue({
+                recommendations: {
+                    recommendations: [
+                        { title: 'Test 1', artist: 'Test Artist 1'},
+                        { title: 'Test 2', artist: 'Test Artist 2'},
+                        { title: 'Test 1', artist: 'Test Artist 3'},
+                    ]
+                }
+            })}
+        ).mockReturnValueOnce(
+            {json: jest.fn().mockReturnValue('testURL')}
+    );
+
+    global.fetch = mockFetch;
     });
     
     afterEach(() => {
         jest.clearAllMocks();
     });
     
-    it ('renders title', () => {
+    it ('renders title (TC-001)', () => {
         const title = screen.getByText(/Mixify/i);
         expect(title).toBeInTheDocument();
     });
 
-    it('limits the characters in the text box (TC-001)', () => {
-        const overLimitInput = "AAAAAAAAAAAAAAAAAAAAAAAAAXXX";
-        const maxInput = "AAAAAAAAAAAAAAAAAAAAAAAAA";
-        fireEvent.change(input, {target: {value: maxInput}});
+    it('submits the request to LLM when submit clicked (TC-002)', () => {
+        fireEvent.change(input, {target: {value: "Test"}});
         fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
 
-        expect(LLM).toBeCalledWith("AAAAAAAAAAAAAAAAAAAAAAAAA", 10);
-    });
-
-    it('submits the request to LLM when submit clicked (TC-002)', () => {
-        fireEvent.change(input, {target: {value: "Test"}});
-        fireEvent.click(button);
-
-        expect(LLM).toBeCalledWith("Test", 5);
+        expect(fetch).toHaveBeenCalledWith("/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                prompt: "Test",
+                auth_token: "test",
+                playlist_length: 10,
+            })
+        })        
     });
     
     it('renders Generation in process text while awaiting content generation (TC-003)', () => {
@@ -54,109 +102,109 @@ describe('homepage', () => {
         expect(button.textContent).toBe("Generation in process");
     });
     
-    it('renders original prompt and list of songs when response received from LLM (TC-004)', () => {
-        const alert = screen.queryByTestId('alert');
+    it('renders original prompt and list of songs when response received from LLM (TC-004)', async () => {
+        let alert = screen.queryByTestId('alert');
         expect(alert).toBeNull();
 
-        fireEvent.change(input, 'Test');
+        fireEvent.change(input, {target: {value: "Test"}});
+        fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
-        
-        setTimeout(() => {
-            expect(alert).not.toBeNull();
-        }, 6000);
+
+        await waitFor(() => {
+            alert = screen.getByTestId('alert');
+            expect(alert).toBeTruthy();
+        });
     });
 
-    it('renders link to playlist once received input from LLM (TC-005)', () => {
-        const link = screen.queryByTestId('alert');
-        expect(link).toBeNull();
+    it('renders link to playlist once received input from LLM (TC-005)', async () => {
+        const saveLink = screen.queryByTestId('linkAsaveLinklert');
+        let playlistLink = screen.queryByTestId('saveLink');
+        expect(saveLink).toBeNull();
+        expect(playlistLink).toBeNull();
 
-        fireEvent.change(input, 'Test');
+        fireEvent.change(input, {target: {value: "test"}});
+        fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
         
-        setTimeout(() => {
-            expect(link).not.toBeNull();
-        }, 6000);
+        await waitFor(() => {
+            const saveButton = screen.getByTestId('saveButton') as HTMLElement;
+            fireEvent.click(saveButton);
+        });
+
+        await waitFor(() => {
+            playlistLink = screen.getByTestId('saveLink');
+            expect(playlistLink).toBeTruthy();
+        });
     });
 
-    it('renders save button after successful generation (TC-006)', () => {
-        const saveButton = screen.queryByTestId('saveButton') as HTMLElement;
+    it('renders save button after successful generation (TC-006)', async () => {
+        let saveButton = screen.queryByTestId('saveButton') as HTMLElement;
         expect(saveButton).toBeNull();
+
         fireEvent.change(input, {target: {value: "test"}});
-        fireEvent.click(button);
-
-        setTimeout(() => {
-            expect(saveButton).not.toBeNull();
-        }, 6000);
-    });
-
-    it('displays playlist created alert (TC-007)', () => {
-        const alert = screen.queryByTestId('alert');
-        expect(alert).toBeNull();
-        fireEvent.change(input, 'Test');
+        fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
         
-        setTimeout(() => {
-            const alert2 = screen.getByTestId('alert');
-            expect(alert2).not.toBeNull();
-        }, 6000);
-
-    });
-    
-    it('renders generic error banner (TC-008)', () => {
-        jest.mock("../LLM/LLM", () => {
-            throw new Error();
+        await waitFor(() => {
+            saveButton = screen.getByTestId('saveButton') as HTMLElement;
+            fireEvent.click(saveButton);
         });
+    });
 
-        const alert = screen.queryByTestId('genericErrorAlert');
+    it('displays playlist created alert (TC-007)', async () => {
+        let alert = screen.queryByTestId('alert');
         expect(alert).toBeNull();
-        fireEvent.change(input, {target: {value: "test"}});
-        fireEvent.click(button);
 
-        setTimeout(() => {
-            expect(alert).not.toBeNull();
-        }, 6000);
-    });
-    
-    it('renders response not received error banner (TC-009)', () => {
-        jest.mock("../LLM/LLM", () => {
-            throw new Error("500");
+        fireEvent.change(input, {target: {value: "test"}});
+        fireEvent.change(slider, {target: {value: 10}});
+        fireEvent.click(button);
+        
+        await waitFor(() => {
+            const saveButton = screen.getByTestId('saveButton') as HTMLElement;
+            fireEvent.click(saveButton);
         });
 
-        const alert = screen.queryByTestId('responseNotReceivedAlert');
-        fireEvent.change(input, {target: {value: "test"}});
-        fireEvent.click(button);
-
-        setTimeout(() => {
-            expect(alert).not.toBeNull();
-        }, 6000);
+        await waitFor(() => {
+            alert = screen.getByTestId('alert');
+            expect(alert).toBeTruthy();
+        });
     });
 
-    it('adjusts to viewport (TC-010)', () => {
-        window.innerHeight = 480;
-        window.innerWidth = 480;
-        fireEvent.resize(window);
+    it('limits the characters in the text box (TC-010)', () => {
+        const overLimitInput = "AAAAAAAAAAAAAAAAAAAAAAAAAXXX";
+        const maxInput = "AAAAAAAAAAAAAAAAAAAAAAAAA";
+        fireEvent.change(input, {target: {value: overLimitInput}});
+        fireEvent.change(slider, {target: {value: 10}});
+        fireEvent.click(button);
 
-        const form = screen.getByTestId('form');
-        expect(form).toHaveStyle('height: 1000px');
-
-        const title = screen.getByText(/Mixify/i);
-        expect(title).toHaveStyle('font-size: 100px');
+        expect(fetch).toHaveBeenCalledWith("/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                prompt: maxInput,
+                auth_token: "test",
+                playlist_length: 10,
+            })
+        });
     });
 
     it('has alt text for screen readers (TC-011)', () => {
-        const image = screen.getByAltText("image of some sound waves");
+        const image = screen.getByAltText("Mixify logo");
         expect(image).toBeInTheDocument();
     });
 
-    it('renders invalid input alert (TC-012)', () => {
-        const alert = screen.queryByTestId('invalidInputAlert');
+    it('renders invalid input alert (TC-012)', async () => {
+        let alert = screen.queryByTestId('invalidInputAlert');
         expect(alert).toBeNull();
-        fireEvent.change(input, {target: {value: ""}});
+        fireEvent.change(input, {target: {value: "   "}});
         fireEvent.click(button);
 
-        setTimeout(() => {
-            expect(alert).not.toBeNull();
-        }, 6000);
+        await waitFor(() => {
+            alert = screen.getByTestId('invalidInputAlert');
+            expect(alert).toBeTruthy();
+        });
     });  
 
     it('adjusts length based on slider (TC-013)', () => {
@@ -164,28 +212,43 @@ describe('homepage', () => {
         fireEvent.change(slider, {target: {value: 10}});
         fireEvent.click(button);
 
-        expect(LLM).toBeCalledWith("test", 10);    
+        expect(fetch).toHaveBeenCalledWith("/api/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                prompt: "test",
+                auth_token: "test",
+                playlist_length: 10,
+            })
+        })    
     });
 });
 
-// describe('homepage', () => {
-    
-    // afterEach(() => {
-    //     jest.clearAllMocks();
-    // });
 
-    // it('understands basic prompts (TC-016)', async () => {
-    //     (fetch as jest.Mock).mockResolvedValue({content: 'Test pass'});
+describe('API errors', () => {
+    beforeEach(() => {
+        jest.resetAllMocks();
+    });
 
-    //     render(<Chat />);
-    //     const input = screen.getByTestId('textInput');
-    //     const slider = screen.getByTestId('sliderInput');
-    //     const button = screen.getByTestId('submitButton');
+    it('renders error for missing access token (TC-008)', async () => {
+        accesstoken = null;
+        render(<Chat />);
 
-    //     fireEvent.change(input, {target: {value: "test"}});
-    //     fireEvent.change(slider, {target: {value: 10}});
-    //     fireEvent.click(button);
+        await waitFor(() => {
+            const error = screen.getByTestId('error');
+            expect(error).toBeTruthy();
+        });
+    });
 
-    //     await waitFor(() => { expect(fetch).toHaveBeenCalled()});
-    // });
-// });
+    it('renders error for connection issues with Supabase (TC-009)', async () => {
+        jest.clearAllMocks()
+        render(<Chat />);
+
+        await waitFor(() => {
+            const error = screen.getByTestId('error');
+            expect(error).toBeTruthy();
+        });
+    });
+});

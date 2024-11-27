@@ -19,8 +19,8 @@ export default async function Signup(props: {
 
   return (
     <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
-        <h1 className="text-2xl font-medium">Sign up</h1>
+      <form className="flex flex-col min-w-64 max-w-64 mx-auto" data-testid="form">
+        <h1 className="text-2xl font-medium" data-testid="title">Sign up</h1>
         <p className="text-sm text text-foreground">
           Already have an account?{" "}
           <Link className="text-primary font-medium underline" href="/sign-in" data-testid="link">

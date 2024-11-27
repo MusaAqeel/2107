@@ -6,6 +6,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from "@/utils/supabase/client";
+import { SpotifyConnectionStatus } from '../hooks/connectionStatus';
+
 import Image from 'next/image';
 import mixifyLogoDark from '../logos/mixify-logo-dark.png';
 import mixifyLogoLight from '../logos/mixify-logo.png';
@@ -83,12 +85,7 @@ const Chat = () => {
               throw new Error('Not authenticated');
             }
     
-            const { data: spotifyConnection, error: connectionError } = await supabase
-              .from('user_connections')
-              .select('*')
-              .eq('user_id', user.id)
-              .eq('provider', 'spotify')
-              .single();
+            const {spotifyConnection, connectionError} = await SpotifyConnectionStatus(user, supabase);
     
             if (connectionError || !spotifyConnection?.access_token) {
               throw new Error('Spotify not connected');
@@ -191,7 +188,7 @@ const Chat = () => {
                         {playlistLength}
                     </div>
                     {error !== null && (
-                        <div className="text-red-500 p-2 border border-red-300 rounded-md">
+                        <div className="text-red-500 p-2 border border-red-300 rounded-md" data-testid='error'>
                         {error}
                         </div>
                     )}
@@ -218,8 +215,8 @@ const Chat = () => {
                         </AlertDescription>
                     </Alert>
                     {showLink ? (                    
-                        <Alert data-testid='alert'>
-                            <a href={playlistURL?.replace(/["']/g, '')} target="_blank" rel="noopener noreferrer">
+                        <Alert data-testid='linkAlert'>
+                            <a href={playlistURL?.replace(/["']/g, '')} target="_blank" rel="noopener noreferrer" data-testid='saveLink'>
                                 Link to playlist
                             </a>
                         </Alert>
