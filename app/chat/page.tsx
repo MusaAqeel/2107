@@ -8,6 +8,11 @@ import { Input } from '@/components/ui/input';
 import { createClient } from "@/utils/supabase/client";
 import { SpotifyConnectionStatus } from '../hooks/connectionStatus';
 
+import Image from 'next/image';
+import mixifyLogoDark from '../logos/mixify-logo-dark.png';
+import mixifyLogoLight from '../logos/mixify-logo.png';
+import { useTheme } from 'next-themes';
+
 const Chat = () => {
     // User sets LLM Prompt and Playlist Length
     const [inputValue, setInputValue] = useState<string>("");
@@ -44,6 +49,30 @@ const Chat = () => {
 
     const handlePlaylistDescriptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setPlaylistDescription((event.target.value).substring(0,300));
+    };
+
+    const { theme } = useTheme();
+
+    const MyImage = () => {
+        return (
+            <>
+            {theme === 'light' ?(
+                <Image
+                src={mixifyLogoLight}
+                alt="My image"
+                width={500}
+                height={500}
+              />
+            ) : (
+                <Image
+                src={mixifyLogoDark}
+                alt="My image"
+                width={500}
+                height={500}
+              />
+            )}
+          </>
+      );
     };
     
     useEffect(() => {
@@ -134,7 +163,7 @@ const Chat = () => {
         <> 
             { !showLLMOutput ? (
             <div className={styles.container}>
-            <div className={styles.title}><h1>Mixify</h1></div>
+            <div>{ MyImage() }</div>
                 <form className={styles.form} data-testid='form'>
                     <h2>What can I help you with today?</h2>
                     <Input maxLength={25} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
