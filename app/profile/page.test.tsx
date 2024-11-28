@@ -9,6 +9,7 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { assert } from 'console';
 
+// We mock supabase to allow these online checks to pass in an offline testing environment
 jest.mock('../../utils/supabase/server.ts', () => {
     return {
         createClient: jest.fn().mockReturnValue({
@@ -19,7 +20,9 @@ jest.mock('../../utils/supabase/server.ts', () => {
     };
 });
 
+// accesstoken can be changed to simulate a fail in error tests
 let accesstoken = 'test' as any;
+// Mock connectionStatus hook to simulate online pass
 jest.mock('../hooks/connectionStatus', () => {
     return {
         SpotifyConnectionStatus: jest.fn().mockImplementation(() => ({
@@ -34,6 +37,7 @@ jest.mock('../hooks/connectionStatus', () => {
     };
 });
 
+// Mock headers hook to simulate online pass
 jest.mock("next/headers", () => ({
     headers: jest.fn().mockReturnValue({
         get: jest.fn().mockReturnValue('TEST'),
@@ -63,6 +67,7 @@ describe('profile page - user connected', () => {
     });
 });
 
+// Errors tested seperatley to change mock environment
 describe('profile page - user disconnected', () => {
     it('allows user to connect account when not currently linked (TC-052)', async () => {
         accesstoken = null;

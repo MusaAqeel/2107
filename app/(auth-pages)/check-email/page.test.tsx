@@ -7,22 +7,25 @@ let button: HTMLElement;
 let link: HTMLElement;
 let info: HTMLElement;
 
+// Mock checkEmailAction to allow us to watch calls to it
 jest.mock("../../actions"), () => ({
     checkEmailAction: jest.fn(),
 });
 
-
+// Mock useFormStatus to pass the checks without needing actual connection
 jest.mock("react-dom", () => ({
     ...jest.requireActual("react-dom"),
     useFormStatus: jest.fn().mockReturnValue({ pending: true }),
 }));
 
+// Mock submit-button to allow us to handle and watch calls to the onClick action in tests
 jest.mock("../../../components/submit-button", () => ({
     SubmitButton: ({ formAction, ...props}: {formAction: any}) => (
         <button {...props} onClick={formAction}></button>
     )
 }));
 
+// Mock supabase to allow us to pass online checks
 jest.mock('../../../utils/supabase/server.ts', () => {
     return {
         createClient: jest.fn().mockReturnValue({

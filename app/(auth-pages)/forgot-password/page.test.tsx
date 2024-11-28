@@ -9,16 +9,18 @@ let email: HTMLInputElement;
 let button: HTMLElement;
 let link: HTMLElement;
 
-
+// Mock forgotPasswordAction to watch calls to it
 jest.mock("../../actions", () => ({
     forgotPasswordAction: jest.fn(),
 }));
 
+// Mock useFormStatus to pass the checks without needing actual connection
 jest.mock("react-dom", () => ({
     ...jest.requireActual("react-dom"),
     useFormStatus: jest.fn().mockReturnValue({ pending: true }),
 }));
 
+// Mock submit-button to allow us to handle and watch calls to the onClick action in tests
 jest.mock("../../../components/submit-button", () => ({
     SubmitButton: ({ formAction, ...props}: {formAction: any}) => (
         <button {...props} onClick={formAction}></button>
@@ -58,6 +60,7 @@ describe('forgot password flow', () => {
 
 });
 
+// Errors tested seperatley to test the error being passed in searchParams
 describe('forgot password error', () => {
     beforeEach(async () => {
         render( await ForgotPassword({ searchParams: Promise.resolve({ error: "Password update failed" }) }))
