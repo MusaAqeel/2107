@@ -1,55 +1,82 @@
 import { render, screen, act } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import Signup from './page';
+import { signUpAction } from '../../actions';
 
 let email: HTMLInputElement;
 let password: HTMLInputElement;
 let button: HTMLElement;
 let link: HTMLElement;
+let form: HTMLElement;
+
+// Mock useFormStatus to pass the checks without needing actual connection
+jest.mock("react-dom", () => ({
+    ...jest.requireActual("react-dom"),
+    useFormStatus: jest.fn().mockReturnValue({ pending: true }),
+}));
+
+// Mock signUpAction to watch calls to it
+jest.mock("../../actions", () => ({
+    signUpAction: jest.fn(),
+}));
+
+// Mock submit-button to allow us to handle and watch calls to the onClick action in tests
+jest.mock("../../../components/submit-button", () => ({
+    SubmitButton: ({ formAction, ...props}: {formAction: any}) => (
+        <button {...props} onClick={formAction}></button>
+    )
+}));
 
 describe('login', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+        render( await Signup({ searchParams: Promise.resolve({ success: "Test success" }) }));
         email = screen.getByTestId('emailInput');
         password = screen.getByTestId('passwordInput');
         button = screen.getByTestId('submit');
         link = screen.getByTestId('link');
+        form = screen.getByTestId('form');
     });
 
-    it('renders title (TC-030)', () => {
-        const title = screen.getByText(/Sign up/i);
-        expect(title).toBeInTheDocument();
+    it('renders title (TC-030)', async () => {
+        const title = screen.getByTestId('title');
+        expect(title).toBeTruthy();
     });
 
     it('renders email input (TC-031)', () => {
-        expect(email).toBeInTheDocument();
+        expect(email).toBeTruthy();
     });
 
     it('renders password input (TC-032)', () => {
-        expect(password).toBeInTheDocument();
+        expect(password).toBeTruthy();
     });
     
     it('renders sign up button (TC-033)', () => {
-        expect(button).toBeInTheDocument();
+        expect(button).toBeTruthy();
     });
 
     it('renders all links (TC-034)', () => {
-        expect(link).toBeInTheDocument();
-        expect(link).toHaveReturnedTimes(2);
-
+        expect(link).toBeTruthy();
     });
 
-    it('displays error if incorrect login (TC-035)', () => {
-        fireEvent.change(email, 'testFail@test.com');
-        fireEvent.change(password, 'test');
+    it('signs up successfully (TC-036)', () => {
+        fireEvent.change(email, { target: {value: 'testSuccess@test.com'}});
+        fireEvent.change(password, { target: {value: 'Test12345!w'}});
         fireEvent.click(button);
-        expect(button).toBeInTheDocument();
+        expect(button).toBeTruthy();
+        expect(signUpAction).toBeCalled();
+    });
+});
+
+// Errors tested seperatley to test the error being passed in searchParams
+describe('sign up error', () => {
+    beforeEach(async () => {
+        render( await Signup({ searchParams: Promise.resolve({ error: "Failed to Complete Sign-Up" }) }))
     });
 
-    it('signs in successfully (TC-036)', () => {
-        fireEvent.change(email, 'testSuccess@test.com');
-        fireEvent.change(password, 'test');
-        fireEvent.click(button);
-        expect(button).toBeInTheDocument();
+    it('displays error if fails to create account (TC-035)', () => {
+        const error = screen.findByText('Failed to Complete Sign-Up');
+        expect(error).toBeTruthy;
     });
 });
 

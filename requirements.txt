@@ -1,5 +1,11 @@
-openai=1.51.2
 fastapi
 uvicorn
 python-dotenv
-pytest=8.3.3
+pytest
+openai
+python-multipart
+requests
+requests-mock
+pytest-mock
+pytest-asyncio
+httpx
