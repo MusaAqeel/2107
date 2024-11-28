@@ -8,6 +8,7 @@ let input: HTMLInputElement;
 let button: HTMLElement;
 let slider: HTMLElement;
 
+// We mock the Supabase client values to pass the checks
 jest.mock('../../utils/supabase/client.ts', () => {
     return {
         createClient: jest.fn().mockReturnValue({
@@ -18,7 +19,9 @@ jest.mock('../../utils/supabase/client.ts', () => {
     };
 });
 
+// accesstoken is changed in the error tests so that we can purposefully fail the connectionStatus check
 let accesstoken = 'test' as any;
+// We mock the connectionStatus to pass the checks
 jest.mock('../hooks/connectionStatus', () => {
     return {
         SpotifyConnectionStatus: jest.fn().mockImplementation(() => ({
@@ -34,6 +37,7 @@ jest.mock('../hooks/connectionStatus', () => {
     };
 });
 
+// We mock the headers to pass the checks
 jest.mock("next/headers", () => ({
     headers: jest.fn().mockReturnValue({
         get: jest.fn().mockReturnValue('TEST'),
@@ -47,8 +51,8 @@ describe('homepage', () => {
         slider = screen.getByTestId('sliderInput');
         button = screen.getByTestId('submitButton');
 
+        // Mock the fetch calls two times, first time for the LLM and track IDs return, second for the playlist creation
         const mockFetch = jest.fn();
-
         mockFetch.mockReturnValueOnce( 
             {json: jest.fn().mockReturnValue({
                 recommendations: {
@@ -62,7 +66,6 @@ describe('homepage', () => {
         ).mockReturnValueOnce(
             {json: jest.fn().mockReturnValue('testURL')}
     );
-
     global.fetch = mockFetch;
     });
     
@@ -224,7 +227,7 @@ describe('homepage', () => {
     });
 });
 
-
+// Seperate tests for checking the errors, so that mock behavior can be changed
 describe('API errors', () => {
     beforeEach(() => {
         jest.resetAllMocks();

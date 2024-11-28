@@ -9,15 +9,18 @@ let firstNameInput: HTMLInputElement;
 let lastNameInput: HTMLInputElement;
 let button: HTMLElement;
 
+// Mock completeProfileAction to watch calls to it
 jest.mock("../../actions", () => ({
     completeProfileAction: jest.fn(),
 }));
 
+// Mock useFormStatus to pass the checks without needing actual connection
 jest.mock("react-dom", () => ({
     ...jest.requireActual("react-dom"),
     useFormStatus: jest.fn().mockReturnValue({ pending: true }),
 }));
 
+// Mock submit-button to allow us to handle and watch calls to the onClick action in tests
 jest.mock("../../../components/submit-button", () => ({
     SubmitButton: ({ formAction, ...props}: {formAction: any}) => (
         <button {...props} onClick={formAction}></button>
@@ -56,6 +59,7 @@ describe('forgot password flow', () => {
         expect(button).toBeTruthy();
     });
 
+    // Errors tested seperatley to test the error being passed in searchParams
     it('calls the completeProfileAction (TC-046)', () => {
         fireEvent.change(firstNameInput, 'first');
         fireEvent.change(lastNameInput, 'last');

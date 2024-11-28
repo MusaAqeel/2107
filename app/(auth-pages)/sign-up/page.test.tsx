@@ -10,15 +10,18 @@ let button: HTMLElement;
 let link: HTMLElement;
 let form: HTMLElement;
 
+// Mock useFormStatus to pass the checks without needing actual connection
 jest.mock("react-dom", () => ({
     ...jest.requireActual("react-dom"),
     useFormStatus: jest.fn().mockReturnValue({ pending: true }),
 }));
 
+// Mock signUpAction to watch calls to it
 jest.mock("../../actions", () => ({
     signUpAction: jest.fn(),
 }));
 
+// Mock submit-button to allow us to handle and watch calls to the onClick action in tests
 jest.mock("../../../components/submit-button", () => ({
     SubmitButton: ({ formAction, ...props}: {formAction: any}) => (
         <button {...props} onClick={formAction}></button>
@@ -65,6 +68,7 @@ describe('login', () => {
     });
 });
 
+// Errors tested seperatley to test the error being passed in searchParams
 describe('sign up error', () => {
     beforeEach(async () => {
         render( await Signup({ searchParams: Promise.resolve({ error: "Failed to Complete Sign-Up" }) }))
