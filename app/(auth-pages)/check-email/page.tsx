@@ -27,10 +27,8 @@ export default async function CheckEmail({ searchParams }: PageProps) {
   const isEmailVerified = user?.email_confirmed_at;
   
   if (!email && !user?.email) {
-    console.log('tobytoby1');
     redirect('/sign-up');
   }
-  console.log('tobytoby2');
   console.log({ email, user: user?.email, isEmailVerified });
 
   return (

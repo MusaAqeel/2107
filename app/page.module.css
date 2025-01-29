@@ -1,0 +1,25 @@
+.homeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 80px; 
+}
+
+.homeLogo {
+  top: 0;
+  margin-bottom: 32px;
+}
+
+/* Text styling */
+.homeText {
+  text-align: center;
+  font-size: 1.875rem; 
+  line-height: 1.3;
+  max-width: 600px;
+  margin-bottom: 24px; 
+}
+
+.homeButton {
+  margin-top: 16px;
+}
