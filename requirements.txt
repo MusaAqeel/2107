@@ -7,5 +7,6 @@ python-multipart
 requests
 requests-mock
 pytest-mock
+pytest-cov
 pytest-asyncio
 httpx
