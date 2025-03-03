@@ -13,7 +13,7 @@ describe("Feedback", () => {
     beforeEach(() => {
         originalLocation = window.location;
         delete (window as any).location;
-        window.location = { href: "" } as Location;
+        window.location = { href: "" } as any;
         render(<Feedback />);
         title = screen.getByText(/Feedback/i);
         input = screen.getByTestId("textInput");
