@@ -9,8 +9,8 @@ import { createClient } from "@/utils/supabase/client";
 import { SpotifyConnectionStatus } from '../hooks/connectionStatus';
 
 import Image from 'next/image';
-import mixifyLogoDark from '../logos/mixify-logo-dark.png';
 import mixifyLogoLight from '../logos/mixify-logo.png';
+import mixifyCroppedDark from '../logos/mixify-cropped-dark.png';
 import { useTheme } from 'next-themes';
 
 const Chat = () => {
@@ -65,7 +65,7 @@ const Chat = () => {
               />
             ) : (
                 <Image
-                src={mixifyLogoDark}
+                src={mixifyCroppedDark}
                 alt="Dark logo"
                 width={500}
                 height={500}
