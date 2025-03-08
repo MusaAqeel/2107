@@ -48,7 +48,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/home");
+  return redirect("/chat");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -164,7 +164,7 @@ export const completeProfileAction = async (formData: FormData) => {
     );
   }
 
-  return redirect("/home");
+  return redirect("/chat");
 };
 
 export const resendVerificationEmail = async (formData: FormData) => {
