@@ -201,7 +201,7 @@ async def get_recommendations(request: ChatRequest):
         return {
             "recommendations": recommendations,
             "track_ids": track_ids,
-            "search_results": [result.dict() for result in search_results],
+            "search_results": [result.model_dump() for result in search_results],
             "stats": {
                 "total": len(search_results),
                 "found": len(track_ids),
