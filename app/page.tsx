@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import Link from "next/link";
 
 import Image from 'next/image';
-import mixifyLogoLight from './logos/mixify-logo.png';
+import mixifyLogoLight from './logos/mixify-cropped-light.png';
 import mixifyCroppedDark from './logos/mixify-cropped-dark.png';
 import { useTheme } from 'next-themes';
 
