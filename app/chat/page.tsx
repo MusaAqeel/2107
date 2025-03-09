@@ -167,8 +167,8 @@ const Chat = () => {
                 <div className={styles.container}>
                     <div>{ MyImage() }</div>
                     <form className={styles.form} data-testid='form'>
-                        <h2>What can I help you with today?</h2>
-                        <Input maxLength={50} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
+                        <h2>What can I mix up for you? Include artists, songs or vibes you love!</h2>
+                        <Input className={styles.input} maxLength={50} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
                         {showInputAlert && (
                                 <Alert data-testid='invalidInputAlert'>
                                     <AlertTitle>Invalid Input</AlertTitle>
@@ -208,10 +208,16 @@ const Chat = () => {
                         </AlertDescription>
                     </Alert>
                     {!savePlaylist && (
-                        <>
-                            <Input data-testid='playlistNameInput' value={playlistName} onChange={handlePlaylistNameChange} />
-                            <Input maxLength={300} data-testid='playlistDescriptionInput' value={playlistDescription} onChange={handlePlaylistDescriptionChange} />
-                        </>
+                        <section className={styles.section}>
+                            <section className={styles.section}>
+                                <h2>Enter playlist name:</h2>
+                                <Input className={styles.input} data-testid='playlistNameInput' value={playlistName} onChange={handlePlaylistNameChange} />
+                            </section>
+                            <section className={styles.section}>
+                                <h2>Enter playlist description:</h2>
+                                <Input className={styles.input} maxLength={300} data-testid='playlistDescriptionInput' value={playlistDescription} onChange={handlePlaylistDescriptionChange} />
+                            </section>
+                        </section>
                     )}
                     <Button variant="outline" size="lg" type="submit" onClick={handlePlaylistSubmit} data-testid='saveButton' disabled={savePlaylist}>
                         {savePlaylist ? 'Your playlist has been saved!' : 'Save to Spotify'}
