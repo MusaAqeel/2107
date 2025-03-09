@@ -6,7 +6,7 @@ import requests
 from main import app, RecommendationsResponse
 
 client = TestClient(app)
-
+#test
 @pytest.fixture
 def mock_spotify():
     with patch("requests.get") as mock_get, patch("requests.post") as mock_post:
