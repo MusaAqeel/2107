@@ -7,8 +7,7 @@ import "./globals.css";
 import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
 import { createClient } from "@/utils/supabase/server";
 import { Toaster } from 'sonner';
-import logo from "./logos/mixify-logo-bg.png";
-import Image from "next/image";
+import LogoImage from  "@/components/nav-logo";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -58,7 +57,7 @@ export default async function RootLayout({
                   <div className="flex gap-5 items-center font-semibold">
                     <Link href="/">
                       <div className="flex items-center gap-2">
-                        <Image src={logo} alt="Mixify Logo" width={40} height={40} />
+                        <LogoImage />
                         <span>Mixify - Your AI DJ</span>
                       </div>
                     </Link>
