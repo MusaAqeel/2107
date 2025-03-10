@@ -135,6 +135,9 @@ export default async function Profile() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Connect your Spotify account to start creating AI-powered playlists
                 </p>
+                <div>
+                  <p style={{textDecoration: "underline" }}><a href="mailto:usa@aql404.com">Click here to send us an email to be added to the beta before connecting Spotify!</a></p>
+                </div>
                 <div className="mt-4">
                   <ConnectSpotify data-testid='connect'/>
                 </div>
