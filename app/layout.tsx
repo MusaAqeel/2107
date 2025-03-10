@@ -90,6 +90,16 @@ export default async function RootLayout({
               </div>
 
               <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
+              <p>
+                  <a
+                    href="/feedback"
+                    target="_blank"
+                    className="font-bold hover:underline"
+                    rel="noreferrer"
+                  >
+                    Leave some feedback for Mixify!
+                  </a>
+                </p>
                 <p>
                   Made with ❤️ by{" "}
                   <a
