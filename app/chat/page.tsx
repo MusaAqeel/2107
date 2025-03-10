@@ -160,6 +160,15 @@ const Chat = () => {
         setPlaylistURL( await response.json() );
         setShowLink(true);
     };
+    
+    if(generating) {
+        console.log(inputValue);
+        console.log(playlistLength);
+    }
+    if(showLLMOutput) {
+        console.log(data.recommendations.recommendations.recommendation.title);
+        console.log(data.recommendations.recommendations.recommendation.artist);
+    }
 
     return (
         <> 
@@ -204,7 +213,16 @@ const Chat = () => {
                     <Alert data-testid='alert'>
                         <AlertTitle>Playlist Created!</AlertTitle>
                         <AlertDescription>
-                        
+                            <table>
+                                <tbody>
+                                    {data.recommendations.recommendations.map((recommendation: any, index: number) => (
+                                        <tr style={{padding: '10px'}} key={index}>
+                                            <td style={{padding: '10px'}}>{recommendation.title}</td>
+                                            <td style={{padding: '10px'}}>{recommendation.artist}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </AlertDescription>
                     </Alert>
                     {!savePlaylist && (
