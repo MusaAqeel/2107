@@ -93,7 +93,7 @@ export default async function RootLayout({
                 <p>
                   Made with ❤️ by{" "}
                   <a
-                    href="https://github.com/MusaAqeel"
+                    href="https://github.com/MusaAqeel/2107/graphs/contributors"
                     target="_blank"
                     className="font-bold hover:underline"
                     rel="noreferrer"
