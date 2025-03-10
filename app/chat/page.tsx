@@ -162,66 +162,49 @@ const Chat = () => {
     return (
         <> 
             { !showLLMOutput ? (
-            <div className={styles.container}>
-            <div>{ MyImage() }</div>
-                <form className={styles.form} data-testid='form'>
-                    <h2>What can I help you with today?</h2>
-                    <Input maxLength={50} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
-                    {showInputAlert && (
-                            <Alert data-testid='invalidInputAlert'>
-                                <AlertTitle>Invalid Input</AlertTitle>
-                                <AlertDescription>
-                                    Please enter a valid input.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                    <div className={styles.slider}>
-                        <h2>Choose your playlist length:</h2>
-                        <input
-                        type="range"
-                        min="1"
-                        max="25"
-                        value={playlistLength}
-                        onChange={handlePlaylistLengthChange}
-                        data-testid='sliderInput'
-                        />
-                        {playlistLength}
-                    </div>
-                    {error !== null && (
-                        <div className="text-red-500 p-2 border border-red-300 rounded-md" data-testid='error'>
-                        {error}
+                <div className={styles.container}>
+                    <div>{ MyImage() }</div>
+                    <form className={styles.form} data-testid='form'>
+                        <h2>What can I help you with today?</h2>
+                        <Input maxLength={50} data-testid='textInput' value={inputValue} onChange={handleInputChange}/>
+                        {showInputAlert && (
+                                <Alert data-testid='invalidInputAlert'>
+                                    <AlertTitle>Invalid Input</AlertTitle>
+                                    <AlertDescription>
+                                        Please enter a valid input.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                        <div className={styles.slider}>
+                            <h2>Choose your playlist length:</h2>
+                            <input
+                            type="range"
+                            min="1"
+                            max="25"
+                            value={playlistLength}
+                            onChange={handlePlaylistLengthChange}
+                            data-testid='sliderInput'
+                            />
+                            {playlistLength}
                         </div>
-                    )}
-                    <Button variant="outline" size="lg" type="submit" onClick={handlePromptSubmit} data-testid='submitButton' disabled={error !== null}>
-                        {generating ? 'Generation in process' : 'Submit'}
-                    </Button>
-                </form>
-            </div> 
-            ): (        
+                        {error !== null && (
+                            <div className="text-red-500 p-2 border border-red-300 rounded-md" data-testid='error'>
+                            {error}
+                            </div>
+                        )}
+                        <Button variant="outline" size="lg" type="submit" onClick={handlePromptSubmit} data-testid='submitButton' disabled={error !== null}>
+                            {generating ? 'Generation in process' : 'Submit'}
+                        </Button>
+                    </form>
+                </div> 
+            ):(        
                 <div>
                     <Alert data-testid='alert'>
                         <AlertTitle>Playlist Created!</AlertTitle>
                         <AlertDescription>
-                        <table>
-                            <tbody>
-                                {data.recommendations.recommendations.map((recommendation: any, index: number) => (
-                                    <tr style={{padding: '10px'}} key={index}>
-                                        <td style={{padding: '10px'}}>{recommendation.title}</td>
-                                        <td style={{padding: '10px'}}>{recommendation.artist}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        
                         </AlertDescription>
                     </Alert>
-                    {showLink ? (                    
-                        <Alert data-testid='linkAlert'>
-                            <a href={playlistURL?.replace(/["']/g, '')} target="_blank" rel="noopener noreferrer" data-testid='saveLink'>
-                                Link to playlist
-                            </a>
-                        </Alert>
-                    ) : null
-                    }
                     {!savePlaylist && (
                         <>
                             <Input data-testid='playlistNameInput' value={playlistName} onChange={handlePlaylistNameChange} />
@@ -229,8 +212,15 @@ const Chat = () => {
                         </>
                     )}
                     <Button variant="outline" size="lg" type="submit" onClick={handlePlaylistSubmit} data-testid='saveButton' disabled={savePlaylist}>
-                        {savePlaylist ? 'Saved!' : 'Save to Spotify'}
+                        {savePlaylist ? 'Your playlist has been saved!' : 'Save to Spotify'}
                     </Button>
+                    {showLink ? (                    
+                        <Alert className={styles.alert} data-testid='linkAlert'>
+                            <a className={styles.link} href={playlistURL?.replace(/["']/g, '')} target="_blank" rel="noopener noreferrer" data-testid='saveLink'>
+                                Click here to see your new mix!
+                            </a>
+                        </Alert>
+                    ) : null}
                 </div>
             )}
         </>
