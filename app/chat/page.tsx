@@ -12,6 +12,7 @@ import Image from 'next/image';
 import mixifyLogoLight from '../logos/mixify-logo.png';
 import mixifyCroppedDark from '../logos/mixify-cropped-dark.png';
 import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 
 const Chat = () => {
     // User sets LLM Prompt and Playlist Length
@@ -52,6 +53,7 @@ const Chat = () => {
     };
 
     const { theme } = useTheme();
+    const router = useRouter();
 
     const MyImage = () => {
         return (
@@ -82,18 +84,18 @@ const Chat = () => {
             const { data: { user } } = await supabase.auth.getUser();
             
             if (!user) {
-              throw new Error('Not authenticated');
+                router.push("/sign-in");
+                throw new Error('Not authenticated, please sign in!');
             }
-    
             const {spotifyConnection, connectionError} = await SpotifyConnectionStatus(user, supabase);
     
             if (connectionError || !spotifyConnection?.access_token) {
-              throw new Error('Spotify not connected');
+              throw new Error('Spotify not connected, please contact us to be added to the Mixify beta!');
             }
             
             setAccessToken(spotifyConnection.access_token);
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to get Spotify token');
+            setError(err instanceof Error ? err.message : 'Failed to get Spotify token, please contact through feedback tab');
           }
         };
     
@@ -102,7 +104,7 @@ const Chat = () => {
 
     useEffect(() => {
         if (!accessToken) {
-          setError('No Spotify Account Connected');
+          setError('No Spotify Account Connected, please complete your profile, or contact for assitance');
         }
         else {
             setError(null);
