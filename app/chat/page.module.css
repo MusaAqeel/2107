@@ -22,6 +22,24 @@
     gap: 10px;
     padding: 2rem;
   }
+  
+  .alert {
+    border: white 2px solid;
+  }
+
+  .link {
+    text-decoration: underline;
+  }
+
+  .section {
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+
+  .input {
+    color: lightgray;
+    border: white 1px solid;
+  }
 
   #video {
     position: fixed;

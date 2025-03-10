@@ -3,6 +3,7 @@ import { fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Chat from './page';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 let input: HTMLInputElement;
 let button: HTMLElement;
@@ -42,6 +43,13 @@ jest.mock("next/headers", () => ({
     headers: jest.fn().mockReturnValue({
         get: jest.fn().mockReturnValue('TEST'),
     }),
+}));
+
+// We mock the useRouter
+jest.mock("next/navigation", () => ({
+    useRouter: jest.fn().mockReturnValue({
+        push: jest.fn(),
+    })
 }));
 
 describe('homepage', () => {
@@ -250,6 +258,14 @@ describe('API errors', () => {
         await waitFor(() => {
             const error = screen.getByTestId('error');
             expect(error).toBeTruthy();
+        });
+    });
+
+    it('prepares useRouter for redirecting unauthorized users (TC-054)', async () => {
+        render(<Chat />);
+
+        await waitFor(() => {
+            expect(useRouter).toHaveBeenCalled();
         });
     });
 });

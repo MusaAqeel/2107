@@ -1,16 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import styles from './page.module.css';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
 
 import Image from 'next/image';
-import mixifyLogoDark from './logos/mixify-logo-dark.png';
-import mixifyLogoLight from './logos/mixify-logo.png';
+import mixifyLogoLight from './logos/mixify-cropped-light.png';
 import mixifyCroppedDark from './logos/mixify-cropped-dark.png';
 import { useTheme } from 'next-themes';
 
