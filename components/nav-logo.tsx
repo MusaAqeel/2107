@@ -11,16 +11,16 @@ export default function ConnectSpotify() {
   const LogoImage = () => {
     return (
         <>
-        {theme === 'dark' ?(
+        {theme === 'light' ?(
             <Image
-            src={mixifyLogoLight}
+            src={mixifyLogoDark}
             alt="Light Mixify logo"
             width={40}
             height={40}
         />
         ) : (
             <Image
-            src={mixifyLogoDark}
+            src={mixifyLogoLight}
             alt="Dark Mixify logo"
             width={40}
             height={40}
