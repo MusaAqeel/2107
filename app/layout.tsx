@@ -85,6 +85,7 @@ export default async function RootLayout({
                   <HeaderAuth />
                 </div>
               </nav>
+              <hr style={{border: "10px solid teal", width: "100rem"}}></hr>
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
               </div>
