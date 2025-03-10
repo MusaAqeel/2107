@@ -104,7 +104,7 @@ const Chat = () => {
 
     useEffect(() => {
         if (!accessToken) {
-          setError('No Spotify Account Connected, please complete your profile, or contact for assitance');
+          setError('No Spotify Account Connected, please complete your profile, or contact for assistance');
         }
         else {
             setError(null);
