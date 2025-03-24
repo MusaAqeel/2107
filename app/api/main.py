@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends
-    uvicorn.runddleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict

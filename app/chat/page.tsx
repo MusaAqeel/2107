@@ -120,7 +120,7 @@ const Chat = () => {
 
         setGenerating(true);
 
-        const response = await fetch("/api/generate", {
+        const response = await fetch("http://127.0.0.1:8000/api/generate", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -141,7 +141,7 @@ const Chat = () => {
         setSavePlaylist(true);
 
             const response = await fetch(
-                `/api/playlist`,
+                `http://127.0.0.1:8000/api/playlist`,
                 {
                     method: "POST",
                     headers: {
