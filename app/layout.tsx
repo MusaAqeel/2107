@@ -7,8 +7,7 @@ import "./globals.css";
 import { refreshAndStoreSpotifyToken } from '@/utils/spotify';
 import { createClient } from "@/utils/supabase/server";
 import { Toaster } from 'sonner';
-import logo from "./logos/mixify-logo-bg.png";
-import Image from "next/image";
+import LogoImage from  "@/components/nav-logo";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -46,7 +45,7 @@ export default async function RootLayout({
       <body className="bg-background text-foreground">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark"
           enableSystem
           disableTransitionOnChange
         >
@@ -58,7 +57,7 @@ export default async function RootLayout({
                   <div className="flex gap-5 items-center font-semibold">
                     <Link href="/">
                       <div className="flex items-center gap-2">
-                        <Image src={logo} alt="Mixify Logo" width={40} height={40} />
+                        <LogoImage />
                         <span>Mixify - Your AI DJ</span>
                       </div>
                     </Link>
@@ -86,15 +85,26 @@ export default async function RootLayout({
                   <HeaderAuth />
                 </div>
               </nav>
+              <hr style={{border: "10px solid teal", width: "100rem"}}></hr>
               <div className="flex flex-col gap-20 max-w-5xl p-5">
                 {children}
               </div>
 
               <footer className="w-full flex items-center justify-center border-t mx-auto text-center text-xs gap-8 py-16">
+              <p>
+                  <a
+                    href="/feedback"
+                    target="_blank"
+                    className="font-bold hover:underline"
+                    rel="noreferrer"
+                  >
+                    Leave some feedback for Mixify!
+                  </a>
+                </p>
                 <p>
                   Made with ❤️ by{" "}
                   <a
-                    href="https://github.com/MusaAqeel"
+                    href="https://github.com/MusaAqeel/2107/graphs/contributors"
                     target="_blank"
                     className="font-bold hover:underline"
                     rel="noreferrer"

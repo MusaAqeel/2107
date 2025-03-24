@@ -94,7 +94,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (!password || !confirmPassword) {
     encodedRedirect(
       "error",
-      "/home/reset-password",
+      "/reset-password",
       "Password and confirm password are required",
     );
   }
@@ -102,7 +102,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (password !== confirmPassword) {
     encodedRedirect(
       "error",
-      "/home/reset-password",
+      "/reset-password",
       "Passwords do not match",
     );
   }
@@ -114,12 +114,12 @@ export const resetPasswordAction = async (formData: FormData) => {
   if (error) {
     encodedRedirect(
       "error",
-      "/home/reset-password",
+      "/reset-password",
       "Password update failed",
     );
   }
 
-  encodedRedirect("success", "/home/reset-password", "Password updated");
+  encodedRedirect("success", "/reset-password", "Password updated");
 };
 
 export const signOutAction = async () => {
@@ -164,7 +164,7 @@ export const completeProfileAction = async (formData: FormData) => {
     );
   }
 
-  return redirect("/home");
+  return redirect("/chat");
 };
 
 export const resendVerificationEmail = async (formData: FormData) => {
