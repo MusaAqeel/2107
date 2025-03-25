@@ -27,7 +27,23 @@ Mixify enhances Spotify's auto-generated playlists by enabling users to create c
    pnpm install
    ```
 
-4. Start the development server:
+ 3. Create Python Virtual Environment (Conda or Venv):
+
+   ```bash
+   python -m venv mixify
+   ```
+or
+   ```bash
+   conda create -n mixify
+   ```
+  
+5. Start the Python Backend:
+   Navigate to the /api directory, then:
+   ```bash
+   uvicorn main:app --reload
+   ```
+   
+6. Start the development server:
 
    ```bash
    pnpm run dev
